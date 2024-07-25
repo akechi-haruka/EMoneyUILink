@@ -1,0 +1,60 @@
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using Emoney.SharedMemory;
+using EMUISharedBackend.GameConfig;
+using Haruka.Arcade.SEGA835Lib.Devices;
+using Haruka.Arcade.SEGA835Lib.Devices.Card;
+using Haruka.Arcade.SEGA835Lib.Devices.Card._837_15396;
+using Haruka.Arcade.SEGA835Lib.Devices.Misc;
+using Newtonsoft.Json;
+using OpenAimeIO_Managed.Core.Services;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+
+namespace eMoneyUILink
+{
+    [BepInPlugin("eu.haruka.gmg.apm.emoneyuilink", "EMoneyUILink", "1.0")]
+    public class EMoneyUILinkUnityBepInEx : BaseUnityPlugin {
+
+        public static ManualLogSource Log;
+
+        public static ConfigEntry<String> ConfigKeychip;
+        public static ConfigEntry<String> ConfigOpenMoneyAddress;
+        private static ConfigEntry<String> EMoneyConfigFile;
+        private static ConfigEntry<String> EMoneyUiExecutable;
+        private static ConfigEntry<int> VFDPort;
+
+        public void Awake() {
+
+            Log = Logger;
+
+            EMoneyConfigFile = Config.Bind("General", "Config File", "W:\\app.json", "Path to app.json");
+            EMoneyUiExecutable = Config.Bind("General", "UI Executable", "C:\\apm\\emoneyUI.exe", "Path to emoneyUI.exe");
+            ConfigOpenMoneyAddress = Config.Bind("Network", "OpenMoney Endpoint", "http://127.0.0.1/openmoney/request", "Address to OpenMoney server");
+            ConfigKeychip = Config.Bind("Network", "Keychip ID", "A00E-01E00000000", "Keychip ID");
+            VFDPort = Config.Bind("Real Hardware", "VFD Port", 0, "Port for VFD");
+
+            Haruka.Arcade.SEGA835Lib.Debugging.Log.Mute = true;
+            Haruka.Arcade.SEGA835Lib.Debugging.Log.LogMessageWritten += Log_LogMessageWritten;
+
+            EMoneyUILink.Initialize(EMoneyConfigFile.Value, VFDPort.Value, EMoneyUiExecutable.Value, ConfigOpenMoneyAddress.Value, ConfigKeychip.Value, LogMessage);
+
+        }
+
+        private void LogMessage(string obj) {
+            Log.LogDebug(obj);
+        }
+
+        private void Log_LogMessageWritten(Haruka.Arcade.SEGA835Lib.Debugging.LogEntry obj) {
+            Log.LogDebug("Sega835Lib: " + obj.Message);
+        }
+
+        
+    }
+}

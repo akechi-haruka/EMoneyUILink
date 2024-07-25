@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EMUISharedBackend": {
+      "commandName": "Project",
+      "commandLineArgs": "W:\\apm\\BB10\\app.json 0 T:\\apm\\emoneyui.exe http://gmg.hopto.org/openmoney/request A01E-95249826908 5 255.255.255.255 5364"
+    }
+  }
+}
