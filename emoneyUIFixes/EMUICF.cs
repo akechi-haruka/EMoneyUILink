@@ -31,8 +31,6 @@ namespace emoneyUIFixes {
 
         }
 
-        public void Update() {
-        }
     }
 
     public class Patches {
@@ -53,6 +51,7 @@ namespace emoneyUIFixes {
             EMUICF.Log.LogDebug("Shared memory access: " + __result);
         }
 
+        // crashfix
         [HarmonyPrefix, HarmonyPatch(typeof(ApmInputApi), "IsEqual")]
         static bool IsEqual(ref ApmInputApi.ApmGamepadConfig config1, ref ApmInputApi.ApmGamepadConfig config2, ref bool __result) {
             if (config1.Sw == null) {
@@ -62,6 +61,7 @@ namespace emoneyUIFixes {
             return true;
         }
 
+        // Reduce hitbox of UI in minimized state
         [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "Start")]
         static bool Start(SceneManager __instance) {
             /*EMUICF.Log.LogDebug("Menu rect: X=" + __instance.entryMenuRect.x + ",Y=" + __instance.entryMenuRect.y);*/

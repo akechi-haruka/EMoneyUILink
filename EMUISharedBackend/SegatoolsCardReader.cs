@@ -13,23 +13,23 @@ namespace EMUISharedBackend {
         public SegatoolsAPI2 Segatools { get; private set; }
 
         private byte group;
+        private byte device;
         private String bcaddr;
-        private int port_in;
-        private int port_out;
+        private int port;
         private bool polling;
 
         private byte[] card;
         private CardType? cardType;
 
-        public SegatoolsCardReader(byte group, string bcaddr, int port_in, int port_out) {
+        public SegatoolsCardReader(byte group, byte device, string bcaddr, int port) {
             this.group = group;
+            this.device = device;
             this.bcaddr = bcaddr;
-            this.port_in = port_in;
-            this.port_out = port_out;
+            this.port = port;
         }
 
         public override DeviceStatus Connect() {
-            Segatools = new SegatoolsAPI2(group, bcaddr, port_in, port_out);
+            Segatools = new SegatoolsAPI2(group, device, bcaddr, port);
             Segatools.OnAime += Segatools_OnAime;
             Segatools.OnFelica += Segatools_OnFelica;
             Segatools.Start();

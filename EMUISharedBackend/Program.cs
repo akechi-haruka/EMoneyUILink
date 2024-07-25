@@ -15,18 +15,18 @@ namespace EMUISharedBackend {
         static void Main(string[] args) {
 
             if (args.Length < 9) {
-                Console.WriteLine("Usage: EMUISharedBackend <app.json> <vfd_port/0> <emoneyui_exe> <openmoney_addr> <keychip> <segatools_group> <segatools_broadcast> <segatools_port_in> <segatools_port_out>");
+                Console.WriteLine("Usage: EMUISharedBackend <app.json> <vfd_port/0> <emoneyui_exe> <openmoney_addr> <keychip> <segatools_group> <segatools_device> <segatools_broadcast> <segatools_port>");
                 return;
             }
 
             Console.WriteLine(@"----------------------------------------
-OpenAimeEMUI 0.2
+EMUISharedBackend 0.3
 2024 Haruka
 ----------------------------------------");
 
             Console.WriteLine("Args: " + String.Join(",", args));
 
-            card = new SegatoolsCardReader(Byte.Parse(args[5]), args[6], Int32.Parse(args[7]), Int32.Parse(args[8]));
+            card = new SegatoolsCardReader(Byte.Parse(args[5]), Byte.Parse(args[6]), args[7], Int32.Parse(args[8]));
             DeviceStatus ret = card.Connect();
             if (ret != DeviceStatus.OK) {
                 Console.WriteLine("API error: " + ret);

@@ -12,29 +12,32 @@ namespace OAS.Segatools {
 
         public const String TAG = nameof(SegatoolsAPI2);
 
-        public const int P_00_PING = 0;
-        public const int P_01_ACK = 1;
-        public const int P_02_TEST = 2;
-        public const int P_03_SERVICE = 3;
-        public const int P_04_CREDIT = 4;
-        public const int P_05_FELICA = 5;
-        public const int P_07_AIME = 7;
-        public const int P_08_SEARCH = 8;
-        public const int P_10_SEQUENCE = 10;
-        public const byte SEQ_BEGIN = 0;
-        public const byte SEQ_CONTINUE = 1;
-        public const byte SEQ_END = 2;
-        public const int P_11_VFD = 11;
-        public const int P_12_PIN_AUTH = 12;
-        public const int P_13_PIN_RESP = 13;
-        public const int P_14_VFD_SHIFT_JIS = 14;
-        public const int P_15_SET_CARD_READER = 15;
-        public const int P_16_SET_CARD_READER_BLOCKING_STATE = 16;
+        public enum Packet : byte {
+            Ping = 20,
+            Ack = 21,
+            Test = 22,
+            Service = 23,
+            Credit = 24,
+            CardReadFelica = 25,
+            CardReadAime = 26,
+            DeviceSearch = 27,
+            PlaySequence = 28,
+            VFDTextUTF = 29,
+            VFDTextShiftJIS = 30,
+            SetCardReaderState = 31,
+            SetCardReaderBlocked = 32
+        }
+
+        public enum SequenceStatus : byte {
+            Start = 0,
+            Continue = 1,
+            End = 2
+        }
 
         public byte GroupId { get; }
-        public string BroadcastAddress { get; }
-        public int RecvPort { get; }
-        public int SendToPort { get; }
+        public byte DeviceId { get; }
+        public IPAddress BroadcastAddress { get; }
+        public int Port { get; }
         public bool Running { get; private set; }
         private bool _connected;
         public bool Connected {
@@ -45,6 +48,7 @@ namespace OAS.Segatools {
             }
         }
         private readonly UdpClient udp;
+        private Thread thread;
 
         public event Action OnTest;
         public event Action OnService;
@@ -54,57 +58,63 @@ namespace OAS.Segatools {
         public event Action<byte[]> OnAime;
         public event Action<string> OnAuthorizationRequested;
         public event Action<bool> OnCardReaderBlocking;
-        private event Action<int, string> OnPin;
 
-        public SegatoolsAPI2(byte groupid, String bcaddr, int recv_port = 5364, int send_to_port = 5365, String local_ep = "0.0.0.0") {
-            Console.WriteLine("Created device ID " + groupid + " with " + bcaddr + ":" + recv_port);
+        public SegatoolsAPI2(byte groupid, byte devid, String broadcast = "255.255.255.255", int port = 5364) {
+            Console.WriteLine("Created group " + groupid + ", device "+devid+" with " + broadcast + ":" + port);
             this.GroupId = groupid;
-            this.BroadcastAddress = bcaddr;
-            this.RecvPort = recv_port;
-            this.SendToPort = send_to_port;
+            this.DeviceId = devid;
+            this.BroadcastAddress = IPAddress.Parse(broadcast);
+            this.Port = port;
             udp = new UdpClient() {
                 EnableBroadcast = true,
                 ExclusiveAddressUse = false
             };
             udp.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            udp.Client.Bind(new IPEndPoint(IPAddress.Parse(local_ep), RecvPort));
+            udp.Client.Bind(new IPEndPoint(IPAddress.Any, Port));
         }
 
         public void Start() {
             if (Running) { return; }
             Console.WriteLine("Starting device ID " + GroupId);
             Running = true;
-            new Thread(StartT) {
+            thread = new Thread(StartT) {
                 Name = "Segatools API"
-            }.Start();
+            };
+            thread.Start();
         }
 
         private void StartT() {
             while (Running) {
                 try {
-                    IPEndPoint pt = new IPEndPoint(IPAddress.Any, RecvPort);
+                    IPEndPoint pt = new IPEndPoint(IPAddress.Any, Port);
                     byte[] data = udp.Receive(ref pt);
                     if (data != null) {
                         Console.WriteLine("Received " + data.Length + " bytes from " + pt);
                         byte id = data[0];
-                        byte len = data[1];
-                        byte grpid = data[2];
+                        byte grpid = data[1];
+                        byte devid = data[2];
+                        byte len = data[3];
                         if (grpid != GroupId) {
                             Console.WriteLine("Not our group ID: " + grpid);
                             continue;
                         }
+                        if (devid != DeviceId) {
+                            Console.WriteLine("Our own device ID, skipping");
+                            continue;
+                        }
                         byte[] inner = new byte[len];
-                        Array.Copy(data, 3, inner, 0, len);
-                        Handle(id, inner, pt);
+                        Array.Copy(data, 4, inner, 0, len);
+                        Handle((Packet)id, inner, pt);
                     }
                 } catch (Exception ex) {
                     if (Running) {
-                        Console.WriteLine("Error while listening on " + BroadcastAddress + ":" + RecvPort + " - " + ex);
+                        Console.WriteLine("Error while listening on " + BroadcastAddress + ":" + Port + " - " + ex);
                     }
                 }
             }
             Console.WriteLine("Stopped device ID " + GroupId);
             Connected = false;
+            Running = false;
         }
 
         public void Stop() {
@@ -115,45 +125,43 @@ namespace OAS.Segatools {
         }
 
         public void SearchDevices() {
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_08_SEARCH, new byte[0]);
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.DeviceSearch, new byte[0]);
         }
 
-        private void Handle(byte id, byte[] inner, IPEndPoint pt) {
+        private void Handle(Packet id, byte[] inner, IPEndPoint pt) {
             Console.WriteLine("Received packet id " + id);
-            if (id == P_00_PING) {
+            if (id == Packet.Ping) {
                 Connected = true;
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_02_TEST) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.Test) {
                 OnTest?.Invoke();
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_03_SERVICE) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.Service) {
                 OnService?.Invoke();
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_04_CREDIT) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.Credit) {
                 OnCredit?.Invoke();
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_05_FELICA) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.CardReadFelica) {
                 OnFelica?.Invoke(inner);
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_07_AIME) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.CardReadAime) {
                 OnAime?.Invoke(inner);
-                Send(pt, P_01_ACK, new byte[0]);
-            } else if (id == P_13_PIN_RESP) {
-                OnPin?.Invoke(inner[0], Encoding.ASCII.GetString(inner, 1, inner.Length - 1));
-                OnPin = null;
-            } else if (id == P_16_SET_CARD_READER_BLOCKING_STATE) {
+                Send(pt, Packet.Ack, new byte[0]);
+            } else if (id == Packet.SetCardReaderBlocked) {
                 OnCardReaderBlocking?.Invoke(inner[0] != 0);
-                Send(pt, P_01_ACK, new byte[0]);
+                Send(pt, Packet.Ack, new byte[0]);
             }
         }
 
-        private void Send(IPEndPoint pt, byte id, byte[] data) {
+        private void Send(IPEndPoint pt, Packet id, byte[] data) {
             byte[] outdata = new byte[data.Length + 3];
-            outdata[0] = id;
-            outdata[1] = (byte)data.Length;
-            outdata[2] = GroupId;
+            outdata[0] = (byte)id;
+            outdata[1] = GroupId;
+            outdata[2] = DeviceId;
+            outdata[3] = (byte)data.Length;
             Array.Copy(data, 0, outdata, 3, data.Length);
-            Console.WriteLine("Sending packet id " + id + " to " + pt);
+            Console.WriteLine("Sending packet " + id + " to " + pt);
             udp.Send(outdata, outdata.Length, pt);
         }
 
@@ -161,34 +169,22 @@ namespace OAS.Segatools {
             throw new NotImplementedException();
         }
 
-        public void SendSequenceStatus(byte info) {
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_10_SEQUENCE, new byte[] {info});
+        public void SendSequenceStatus(SequenceStatus info) {
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.PlaySequence, new byte[] {(byte)info});
         }
 
         public void SetVFDMessage(String str) {
             Console.WriteLine("VFD: " + str);
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_11_VFD, Encoding.UTF8.GetBytes(str));
-        }
-
-        public void SendOpenMoneyAuthorization(Action<int, string> onPin, String message) {
-            OnPin += onPin;
-            byte[] msg = Encoding.UTF8.GetBytes(message);
-            byte[] bytes = new byte[msg.Length + 1];
-            bytes[0] = 1;
-            Array.Copy(msg, 0, bytes, 1, msg.Length);
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_12_PIN_AUTH, bytes);
-        }
-
-        public void StopOpenMoneyAuthorization() {
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_12_PIN_AUTH, new byte[] { 0 });
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.VFDTextUTF, Encoding.UTF8.GetBytes(str));
         }
 
         public void SendCredit(uint count) {
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_04_CREDIT, new byte[] { (byte)(int)count });
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.Credit, new byte[] { (byte)(int)count });
         }
 
         public void SetCardReaderStatus(bool v) {
-            Send(new IPEndPoint(IPAddress.Parse(BroadcastAddress), SendToPort), P_15_SET_CARD_READER, new byte[] { (byte)(v ? 1 : 0) });
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.SetCardReaderState, new byte[] { (byte)(v ? 1 : 0) });
         }
+
     }
 }

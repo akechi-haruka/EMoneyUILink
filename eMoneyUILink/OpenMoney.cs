@@ -1,73 +1,87 @@
-﻿using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+﻿using Emoney.SharedMemory;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using static OpenAimeIO_Managed.Core.Services.EMoney;
 
 namespace eMoneyUILink {
+
+    internal class PaymentRequest {
+        public int version;
+        public String keychip;
+        public String cardid;
+        public PaymentRequestType request;
+        public EMoneyBrandEnum brand;
+        public int amount;
+        public int count;
+        public String item_name;
+    }
+
+    internal enum PaymentRequestType {
+        Balance, PayToCoin, PayAmount
+    }
+
+    internal class PaymentResponse {
+        public bool success;
+        public String error;
+        public int balance_after;
+    }
+
     internal class OpenMoney {
 
-        private static Dictionary<string, string> AllnetWebRequest(string path, String content) {
-            EMoneyUILink.LogMessage("Allnet: Network Request: " + path);
-            EMoneyUILink.LogMessage("Allnet: Send: " + content);
+        private const int VERSION = 2;
+
+        private static string OpenMoneyWebRequest(string path, string request, int version) {
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Network Request: " + path);
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Send: " + request);
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(path);
-            req.UserAgent = "Windows/ver.3.0";
-            req.ContentType = "application/x-www-form-urlencoded";
+            req.UserAgent = "OpenMoney/"+version;
+            req.ContentType = "application/json";
             req.Method = "POST";
 
-            byte[] b64 = Encoding.ASCII.GetBytes(Convert.ToBase64String(ZipStr(content)));
-            req.Headers.Add("Pragma", "DFI");
+            byte[] bytes = Encoding.ASCII.GetBytes(request);
 
-            req.ContentLength = b64.Length;
-            EMoneyUILink.LogMessage("Allnet: Request length: " + b64.Length);
+            req.ContentLength = bytes.Length;
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Request length: " + bytes.Length);
 
             Stream rs = req.GetRequestStream();
-            rs.Write(b64, 0, b64.Length);
+            rs.Write(bytes, 0, bytes.Length);
             rs.Flush();
 
             HttpWebResponse resp = (HttpWebResponse)req.GetResponse();
 
             int len = (int)resp.ContentLength;
-            EMoneyUILink.LogMessage("Allnet: Response length: " + len);
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Response length: " + len);
             byte[] indata = new byte[len];
             Stream res = resp.GetResponseStream();
             res.Read(indata, 0, len);
             String data = Encoding.ASCII.GetString(indata);
 
-            EMoneyUILink.LogMessage("Allnet: Received: " + data);
-
-            Dictionary<string, string> values = new Dictionary<string, string>();
-            foreach (string keyval in data.Split('&')) {
-                string[] keyval2 = keyval.Split('=');
-                values.Add(keyval2[0], keyval2[1]);
-            }
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Received: " + data);
 
             rs.Close();
             res.Close();
 
-            return values;
+            return data;
         }
 
-        private static byte[] ZipStr(String str) {
-            using (MemoryStream output = new MemoryStream()) {
-                using (DeflaterOutputStream gzip =
-                  new DeflaterOutputStream(output)) {
-                    using (StreamWriter writer =
-                      new StreamWriter(gzip, Encoding.UTF8)) {
-                        writer.Write(str);
-                    }
-                }
-
-                return output.ToArray();
-            }
-        }
-
-        public static Dictionary<string, string> OpenMoneyRequest(String cardid, int accountid, int brandId, int amount, int count, String requestType) {
+        public static PaymentResponse OpenMoneyRequest(String cardid, EMoneyBrandEnum brand_id, int amount, int count, PaymentRequestType requestType, String item_name) {
             String path = EMoneyUILink.openmoney_url;
-            String content = "_=_&cardid=" + cardid + "&accountid=" + accountid + "&brandid=" + brandId + "&amount=" + amount + "&count=" + count + "&requestType=" + requestType + "&openaime=0&emoneyuilink=1&pcbid=" + EMoneyUILink.keychip_id + "&__=_";
-            return AllnetWebRequest(path, content);
+            PaymentRequest req = new PaymentRequest() {
+                version = VERSION,
+                request = requestType,
+                amount = amount,
+                brand = brand_id,
+                cardid = cardid,
+                count = count,
+                item_name = item_name,
+                keychip = EMoneyUILink.keychip_id
+            };
+            return JsonConvert.DeserializeObject<PaymentResponse>(OpenMoneyWebRequest(path, JsonConvert.SerializeObject(req), VERSION));
         }
 
     }

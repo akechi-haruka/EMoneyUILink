@@ -36,7 +36,7 @@ namespace eMoneyUILink
 
             EMoneyConfigFile = Config.Bind("General", "Config File", "W:\\app.json", "Path to app.json");
             EMoneyUiExecutable = Config.Bind("General", "UI Executable", "C:\\apm\\emoneyUI.exe", "Path to emoneyUI.exe");
-            ConfigOpenMoneyAddress = Config.Bind("Network", "OpenMoney Endpoint", "http://127.0.0.1/openmoney/request", "Address to OpenMoney server");
+            ConfigOpenMoneyAddress = Config.Bind("Network", "OpenMoney Endpoint", "http://127.0.0.1/openmoney/request2", "Address to OpenMoney server");
             ConfigKeychip = Config.Bind("Network", "Keychip ID", "A00E-01E00000000", "Keychip ID");
             VFDPort = Config.Bind("Real Hardware", "VFD Port", 0, "Port for VFD");
 

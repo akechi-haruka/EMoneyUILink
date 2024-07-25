@@ -113,11 +113,11 @@ namespace OpenAimeIO_Managed.Core.Services {
             Busy = true;
             IsCancellable = true;
             Result = null;
-            Executor = new Thread(() => EMoneyRequestT(brandId, 0, 0, "balance", OnBalanceSuccess));
+            Executor = new Thread(() => EMoneyRequestT(brandId, 0, 0, PaymentRequestType.Balance, "BALANCE", OnBalanceSuccess));
             Executor.Start();
         }
 
-        public static void PayToCoin(EMoneyBrandEnum brandId, uint coin) {
+        public static void PayToCoin(EMoneyBrandEnum brandId, string itemName, uint coin) {
             if (CheckTooFastRequest()) {
                 return;
             }
@@ -125,7 +125,7 @@ namespace OpenAimeIO_Managed.Core.Services {
             Busy = true;
             IsCancellable = true;
             Result = null;
-            Executor = new Thread(() => EMoneyRequestT(brandId, 1, (int)coin, "payCoin", (amount, remaining) => OnPayCoinSuccess(amount, remaining, coin)));
+            Executor = new Thread(() => EMoneyRequestT(brandId, 1, (int)coin, PaymentRequestType.PayToCoin, itemName, (amount, remaining) => OnPayCoinSuccess(amount, remaining, coin)));
             Executor.Start();
         }
 
@@ -136,7 +136,7 @@ namespace OpenAimeIO_Managed.Core.Services {
             Busy = true;
             IsCancellable = true;
             Result = null;
-            Executor = new Thread(() => EMoneyRequestT(brandId, amount, (int)count, "payAmount:" + itemId, (amount_, remaining) => OnPayAmountSuccess(amount_, remaining, count)));
+            Executor = new Thread(() => EMoneyRequestT(brandId, amount, (int)count, PaymentRequestType.PayAmount, itemId, (amount_, remaining) => OnPayAmountSuccess(amount_, remaining, count)));
             Executor.Start();
         }
 
@@ -147,9 +147,9 @@ namespace OpenAimeIO_Managed.Core.Services {
             return false;
         }
 
-        private static void EMoneyRequestT(EMoneyBrandEnum brandId, int amount, int count, String requestType, EMoneySuccessCallback onSucess) {
+        private static void EMoneyRequestT(EMoneyBrandEnum brandId, int amount, int count, PaymentRequestType requestType, String itemName, EMoneySuccessCallback onSucess) {
             try {
-                Dictionary<string, string> result;
+                PaymentResponse result;
                 EMoneyUILink.LogMessage("EMoney: Request " + requestType);
 
                 CardReader aime = EMoneyUILink.ReaderAdapter;
@@ -172,27 +172,20 @@ namespace OpenAimeIO_Managed.Core.Services {
                 EMoneyUILink.LogMessage("EMoney: Processing...");
                 EMoneyUILink.Vfd?.SetText("Processing...", "");
                 try {
-                    result = OpenMoney.OpenMoneyRequest(aime.GetCardUIDAsString(), 0, (int)brandId, amount, count, requestType);
+                    result = OpenMoney.OpenMoneyRequest(aime.GetCardUIDAsString(), brandId, amount, count, requestType, itemName);
                     Thread.Sleep(1000);
                 } catch (Exception ex) {
                     EMoneyUILink.LogMessage("Request failed: " + ex);
                     EndOperation(true, EMoneyResultStatus.Unconfirm, new EMoneyResult(false, brandId), "Failed to contact server");
                     return;
                 }
-                var success = result["success"] == "true";
-                int rem = 0;
-                if (success) {
-                    rem = Int32.Parse(result["remaining"]);
-                }
-                String error = "unknown";
-                result.TryGetValue("error", out error);
-                if (success) {
-                    onSucess(amount, rem);
+                if (result.success) {
+                    onSucess(amount, result.balance_after);
                 } else {
-                    EMoneyUILink.Vfd?.SetText("An error has occurred:", error, true);
+                    EMoneyUILink.Vfd?.SetText("An error has occurred:", result.error, true);
                 }
                 aime.StopPolling();
-                if (success) {
+                if (result.success) {
                     aime.LEDSetColor(0, 0, 255);
                 } else {
                     aime.LEDSetColor(255, 0, 0);
@@ -200,19 +193,19 @@ namespace OpenAimeIO_Managed.Core.Services {
                 Result = new EMoneyResult() {
                     time = DateTime.Now,
                     amount = amount,
-                    balanceAfter = rem,
-                    balanceBefore = rem + amount,
+                    balanceAfter = result.balance_after,
+                    balanceBefore = result.balance_after + amount,
                     brand = (EMoneyBrandEnum)(int)brandId,
                     cardNumber = aime.GetCardUIDAsString(),
                     dealNumber = "lolwut",
-                    success = success,
+                    success = result.success,
                     count = count
                 };
-                if (requestType != "balance") {
+                if (requestType != PaymentRequestType.Balance) {
                     PlaySound = true;
                 }
                 Thread.Sleep(5000);
-                EndOperation(!success, success ? EMoneyResultStatus.Success : EMoneyResultStatus.Incomplete, Result, error);
+                EndOperation(!result.success, result.success ? EMoneyResultStatus.Success : EMoneyResultStatus.Incomplete, Result, result.error);
             } catch (ThreadInterruptedException) {
                 EMoneyUILink.LogMessage("EMoney: Process cancelled");
             }
