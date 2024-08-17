@@ -25,7 +25,8 @@ namespace OAS.Segatools {
             VFDTextUTF = 29,
             VFDTextShiftJIS = 30,
             SetCardReaderState = 31,
-            SetCardReaderBlocked = 32
+            SetCardReaderBlocked = 32,
+            SetCardReaderRGB = 33
         }
 
         public enum SequenceStatus : byte {
@@ -184,6 +185,10 @@ namespace OAS.Segatools {
 
         public void SetCardReaderStatus(bool v) {
             Send(new IPEndPoint(BroadcastAddress, Port), Packet.SetCardReaderState, new byte[] { (byte)(v ? 1 : 0) });
+        }
+
+        public void SetCardReaderRGB(byte r, byte g, byte b) {
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.SetCardReaderRGB, new byte[] { r, g, b });
         }
 
     }

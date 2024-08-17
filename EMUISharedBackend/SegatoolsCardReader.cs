@@ -105,12 +105,12 @@ namespace EMUISharedBackend {
         }
 
         public override DeviceStatus LEDSetColor(byte red, byte green, byte blue) {
-            // todo
+            Segatools.SetCardReaderRGB(red, green, blue);
             return DeviceStatus.OK;
         }
 
         public override DeviceStatus LEDReset() {
-            // todo
+            Segatools.SetCardReaderRGB(0, 0, 0);
             return DeviceStatus.OK;
         }
     }
