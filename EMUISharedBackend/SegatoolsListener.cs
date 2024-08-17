@@ -20,7 +20,6 @@ namespace OAS.Segatools {
             Credit = 24,
             CardReadFelica = 25,
             CardReadAime = 26,
-            DeviceSearch = 27,
             PlaySequence = 28,
             VFDTextUTF = 29,
             VFDTextShiftJIS = 30,
@@ -123,10 +122,6 @@ namespace OAS.Segatools {
             try {
                 udp?.Close();
             } catch { }
-        }
-
-        public void SearchDevices() {
-            Send(new IPEndPoint(BroadcastAddress, Port), Packet.DeviceSearch, new byte[0]);
         }
 
         private void Handle(Packet id, byte[] inner, IPEndPoint pt) {
