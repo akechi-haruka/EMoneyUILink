@@ -186,5 +186,8 @@ namespace OAS.Segatools {
             Send(new IPEndPoint(BroadcastAddress, Port), Packet.SetCardReaderRGB, new byte[] { r, g, b });
         }
 
+        public void SendPing() {
+            Send(new IPEndPoint(BroadcastAddress, Port), Packet.Ping, new byte[0]);
+        }
     }
 }

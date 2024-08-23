@@ -36,7 +36,7 @@ EMUISharedBackend 0.3
             card.Segatools.OnCardReaderBlocking += Segatools_OnCardReaderBlocking;
             int time = 10;
             while (!card.Segatools.Connected) {
-                card.Segatools.SearchDevices();
+                card.Segatools.SendPing();
                 Thread.Sleep(1000);
                 if (time-- < 0) {
                     break;
