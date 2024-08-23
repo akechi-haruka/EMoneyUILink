@@ -24,6 +24,7 @@ namespace APMCoreFixes {
     public class APMCF : BaseUnityPlugin {
 
         private const String CAT_HOME_USE = "Home Use";
+        private const String CAT_INPUT = "Input";
         private const String CAT_NETWORK = "Network";
         private const String CAT_DEBUG = "Debug";
 
@@ -38,8 +39,13 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
-        public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
         public static ConfigEntry<KeyboardShortcut> ConfigDebugFakeAimeRead;
+
+        public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
+        public static ConfigEntry<int> ConfigIO4StickDeadzone;
+        public static ConfigEntry<bool> ConfigHardTranslations;
+        public static ConfigEntry<bool> ConfigIO4AxisXInvert;
+        public static ConfigEntry<bool> ConfigIO4AxisYInvert;
 
         private DateTime lastClockUpdate = DateTime.Now;
         private GameObject clock;
@@ -54,8 +60,12 @@ namespace APMCoreFixes {
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
             ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", true, "Instead of amdaemon, use .bat files to launch games, see readme");
-            ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_HOME_USE, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires a modified common.json)");
             ConfigDebugFakeAimeRead = Config.Bind(CAT_DEBUG, "Aime reader debug scan key", new KeyboardShortcut(KeyCode.F11), "for development use");
+
+            ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires a modified common.json)");
+            ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
+            ConfigIO4AxisXInvert = Config.Bind(CAT_INPUT, "X Axis Invert", false, "Inverts the X axis");
+            ConfigIO4AxisYInvert = Config.Bind(CAT_INPUT, "Y Axis Invert", false, "Inverts the Y axis");
 
             Harmony.CreateAndPatchAll(typeof(ABaaSGsPatches), "eu.haruka.gmg.apm.fixes.abaasgs");
             Harmony.CreateAndPatchAll(typeof(APMDebugPatches), "eu.haruka.gmg.apm.fixes.debug");

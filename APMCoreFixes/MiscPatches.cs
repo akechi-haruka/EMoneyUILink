@@ -137,20 +137,34 @@ namespace APMCoreFixes {
             return true;
         }
 
+        private static double map(double x, double in_min, double in_max, double out_min, double out_max) {
+            return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+        }
+
         private static void UpdateAnalog(InputSystem input) {
             InputUnit unit = Input.Players[0];
-            double center = ushort.MaxValue / 2;
-            const double deadzone = 1000;
-            var ax = unit.GetAnalog(APMCF.AnalogX, 70000);
-            var ay = unit.GetAnalog(APMCF.AnalogY, 70000);
-            double x = ax.Value;
-            double y = ay.Value;
+
+            double deadzone = APMCF.ConfigIO4StickDeadzone.Value / 100F;
+            var ax = unit.GetAnalog(APMCF.AnalogX).Value;
+            var ay = unit.GetAnalog(APMCF.AnalogY).Value;
+            double x = map(ax, 0, 1, -1, 1);
+            double y = map(ay, 0, 1, -1, 1);
+            APMCF.Log.LogDebug(ax + "/" + ay);
+
+            if (APMCF.ConfigIO4AxisXInvert.Value) {
+                x = -x;
+            }
+            if (APMCF.ConfigIO4AxisYInvert.Value) {
+                y = -y;
+            }
+
+            //APMCF.Log.LogDebug(x + "/" + y);
 
             bool on = (
-                (input.sw == InputSwitch.up && y > center + deadzone) ||
-                (input.sw == InputSwitch.right && x > center + deadzone) ||
-                (input.sw == InputSwitch.down && y < center - deadzone) ||
-                (input.sw == InputSwitch.left && x < center - deadzone)
+                (input.sw == InputSwitch.up && y > deadzone) ||
+                (input.sw == InputSwitch.right && x > deadzone) ||
+                (input.sw == InputSwitch.down && y < -deadzone) ||
+                (input.sw == InputSwitch.left && x < -deadzone)
             );
 
             if (on) {

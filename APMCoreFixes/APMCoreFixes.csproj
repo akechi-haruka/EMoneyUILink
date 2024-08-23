@@ -94,6 +94,7 @@
     <PostBuildEvent>copy /Y $(TargetPath) L:\SDVX\apm3\bepinex\plugins\$(TargetName).dll
 psexec \\allsux.lan taskkill /F /IM Apmv3System.exe
 timeout /T 1
+sleep 1
 copy /Y $(TargetPath) T:\apm\BepInEx\plugins\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>
