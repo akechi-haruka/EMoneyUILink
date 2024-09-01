@@ -1,6 +1,7 @@
 ﻿using Apm.Emoney.Ui;
 using Apm.Emoney.Ui.GamePad;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using Emoney.SharedMemory;
 using HarmonyLib;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,14 +22,25 @@ namespace emoneyUIFixes {
     [BepInProcess("emoneyUI")]
     public class EMUICF : BaseUnityPlugin {
 
+        public static ConfigEntry<bool> ConfigShrinkHitbox;
+        public static ConfigEntry<int> ConfigDelayStart;
+
         public static ManualLogSource Log;
 
         public void Awake() {
             Log = Logger;
 
+            ConfigShrinkHitbox = Config.Bind("General", "Shrink Window Hitbox", true, "Shrinks the (invisible) window hitbox for less risk of touch swallowing if being close to eMoneyUI");
+            ConfigDelayStart = Config.Bind("General", "Startup Delay", 2, "Time delay in seconds until eMoneyUI shows up");
+
             Harmony.CreateAndPatchAll(typeof(Patches), "eu.haruka.gmg.apm.fixes.emoneyui.main");
 
             Log.LogInfo("Loaded");
+
+            if (ConfigDelayStart.Value > 0) {
+                Log.LogInfo("Waiting " +  ConfigDelayStart.Value + " second(s)...");
+                Thread.Sleep(ConfigDelayStart.Value * 1000);
+            }
 
         }
 
@@ -64,20 +77,24 @@ namespace emoneyUIFixes {
         // Reduce hitbox of UI in minimized state
         [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "Start")]
         static bool Start(SceneManager __instance) {
-            /*EMUICF.Log.LogDebug("Menu rect: X=" + __instance.entryMenuRect.x + ",Y=" + __instance.entryMenuRect.y);*/
-            EMUICF.Log.LogDebug("Menu size: X=" + __instance.entryMenuSize.x + ",Y=" + __instance.entryMenuSize.y);
-            EMUICF.Log.LogDebug("Icon alignment: " + __instance.iconAxis);
-            if (__instance.entryMenuSize.x >= 230 && __instance.entryMenuSize.y >= 150) {
-                if (__instance.iconAxis == UnityEngine.UI.GridLayoutGroup.Axis.Vertical) {
-                    //__instance.entryMenuRect.x /= 2;
-                    __instance.entryMenuSize.y /= 2;
-                    EMUICF.Log.LogInfo("Shrinking X axis");
-                } else if (__instance.iconAxis == UnityEngine.UI.GridLayoutGroup.Axis.Horizontal) {
-                    //__instance.entryMenuRect.y /= 2;
-                    __instance.entryMenuSize.x /= 2;
-                    EMUICF.Log.LogInfo("Shrinking Y axis");
+            if (EMUICF.ConfigShrinkHitbox.Value) {
+                /*EMUICF.Log.LogDebug("Menu rect: X=" + __instance.entryMenuRect.x + ",Y=" + __instance.entryMenuRect.y);*/
+                EMUICF.Log.LogDebug("Menu size: X=" + __instance.entryMenuSize.x + ",Y=" + __instance.entryMenuSize.y);
+                EMUICF.Log.LogDebug("Icon alignment: " + __instance.iconAxis);
+                if (__instance.entryMenuSize.x >= 230 && __instance.entryMenuSize.y >= 150) {
+                    if (__instance.iconAxis == UnityEngine.UI.GridLayoutGroup.Axis.Vertical) {
+                        //__instance.entryMenuRect.x /= 2;
+                        __instance.entryMenuSize.y /= 2;
+                        EMUICF.Log.LogInfo("Shrinking X axis");
+                    } else if (__instance.iconAxis == UnityEngine.UI.GridLayoutGroup.Axis.Horizontal) {
+                        //__instance.entryMenuRect.y /= 2;
+                        __instance.entryMenuSize.x /= 2;
+                        EMUICF.Log.LogInfo("Shrinking Y axis");
+                    }
                 }
+                
             }
+
             return true;
         }
 
