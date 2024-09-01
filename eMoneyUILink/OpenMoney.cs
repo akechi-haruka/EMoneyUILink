@@ -14,7 +14,7 @@ namespace eMoneyUILink {
         public int version;
         public String keychip;
         public String cardid;
-        public PaymentRequestType request;
+        public String request;
         public EMoneyBrandEnum brand;
         public int amount;
         public int count;
@@ -73,7 +73,7 @@ namespace eMoneyUILink {
             String path = EMoneyUILink.openmoney_url;
             PaymentRequest req = new PaymentRequest() {
                 version = VERSION,
-                request = requestType,
+                request = requestType.ToString(),
                 amount = amount,
                 brand = brand_id,
                 cardid = cardid,
