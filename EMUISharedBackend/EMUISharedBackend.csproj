@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\eMoneyUILink\eMoneyUILink.csproj" />
+    <ProjectReference Include="..\SegatoolsAPI\SegatoolsAPI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

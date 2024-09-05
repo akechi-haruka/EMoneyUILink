@@ -8,15 +8,17 @@ namespace eMoneyUILink {
     public class EMUIApi {
 
         public static void SetCardReaderBlocked(bool b) {
-            EMoneyUILink.LogMessage("SetCardReaderBlocked: " + b);
-            EMoneyUILink.cardReaderBlocked = b;
-            EMoneyUILink.Vfd?.ClearScreen();
-            if (b) {
-                EMoneyUILink.Vfd?.SetText("Scan your Aime, BanaPassport, FeliCa or mobile phone! ", "", true, false);
-            } else {
-                EMoney.SetVfdIdleText();
+            if (EMoneyUILink.cardReaderBlocked != b) {
+                EMoneyUILink.LogMessage("SetCardReaderBlocked: " + b);
+                EMoneyUILink.cardReaderBlocked = b;
+                EMoneyUILink.Vfd?.ClearScreen();
+                if (b) {
+                    EMoneyUILink.Vfd?.SetText("Scan your Aime, BanaPassport, FeliCa or mobile phone! ", "", true, false);
+                } else {
+                    EMoney.SetVfdIdleText();
+                }
+                EMoneyUILink.Vfd?.SetTextDrawing(true);
             }
-            EMoneyUILink.Vfd?.SetTextDrawing(true);
         }
         public static void SetAlive(bool b) {
             EMoneyUILink.LogMessage("SetAlive: " + b);

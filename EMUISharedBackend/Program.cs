@@ -2,6 +2,7 @@
 using eMoneyUILink;
 using EMUISharedBackend.GameConfig;
 using Haruka.Arcade.SEGA835Lib.Devices;
+using Haruka.Arcade.SegatoolsAPI;
 using OpenAimeIO_Managed;
 using System;
 using System.Threading;
@@ -19,6 +20,8 @@ namespace EMUISharedBackend {
                 return;
             }
 
+            SegatoolsAPI2.OnLogMessage += SegatoolsAPI2_OnLogMessage;
+
             Console.WriteLine(@"----------------------------------------
 EMUISharedBackend 0.3
 2024 Haruka
@@ -34,14 +37,14 @@ EMUISharedBackend 0.3
             }
             card.Segatools.OnConnectedChange += Segatools_OnConnectedChange;
             card.Segatools.OnCardReaderBlocking += Segatools_OnCardReaderBlocking;
-            int time = 10;
+            /*int time = 10;
             while (!card.Segatools.Connected) {
                 card.Segatools.SendPing();
                 Thread.Sleep(1000);
                 if (time-- < 0) {
                     break;
                 }
-            }
+            }*/
 
             EMUIApi.AddCoinEvent(CoinEvent);
             EMUIApi.Aime = card;
@@ -49,6 +52,9 @@ EMUISharedBackend 0.3
             EMoneyUILink.Initialize(args[0], Int32.Parse(args[1]), args[2], args[3], args[4], log_callback);
         }
 
+        private static void SegatoolsAPI2_OnLogMessage(string obj) {
+            Console.WriteLine(obj);
+        }
 
         private static void Segatools_OnConnectedChange(bool obj) {
             EMUIApi.SetAlive(obj);
@@ -63,6 +69,7 @@ EMUISharedBackend 0.3
         }
 
         private static void Segatools_OnCardReaderBlocking(bool obj) {
+            EMUIApi.SetAlive(true);
             EMUIApi.SetCardReaderBlocked(obj);
         }
 

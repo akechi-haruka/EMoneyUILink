@@ -176,8 +176,10 @@ namespace OpenAimeIO_Managed.Core.Services {
                     Thread.Sleep(1000);
                 } catch (Exception ex) {
                     EMoneyUILink.LogMessage("Request failed: " + ex);
-                    EndOperation(true, EMoneyResultStatus.Unconfirm, new EMoneyResult(false, brandId), "Failed to contact server");
-                    return;
+                    result = new PaymentResponse() {
+                        success = false,
+                        error = ex.Message
+                    };
                 }
                 if (result.success) {
                     onSucess(amount, result.balance_after);

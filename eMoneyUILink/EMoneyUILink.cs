@@ -18,6 +18,7 @@ namespace eMoneyUILink {
         private static ShareMemoryAccessor mem;
         private static UiSharedData data;
         private static Action<string> log_callback;
+        private static bool sound_allowed;
 
         internal static CardReader ReaderAdapter;
         internal static VFD_GP1232A02A Vfd;
@@ -73,49 +74,57 @@ namespace eMoneyUILink {
             data.Resource.MainMarginY = (uint)config.ui.main_window.position.margin.y;
 
             data.Daemon.DisplayBrands = new Brand[16];
-            data.Daemon.DisplayBrands[0] = new Brand() {
-                Id = 1U,
-                Filename = "0001-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[1] = new Brand() {
-                Id = 2U,
-                Filename = "0002-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[2] = new Brand() {
-                Id = 3U,
-                Filename = "0003-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[3] = new Brand() {
-                Id = 4U,
-                Filename = "0005-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[4] = new Brand() {
-                Id = 5U,
-                Filename = "0006-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[5] = new Brand() {
-                Id = 6U,
-                Filename = "0008-01-00",
-                EnableBalance = true
-            };
-            data.Daemon.DisplayBrands[6] = new Brand() {
-                Id = 7U,
-                Filename = "0009-01-00",
-                EnableBalance = true
-            };
+            if (config.emoney.paseli) {
+                data.Daemon.DisplayBrands[0] = new Brand() {
+                    Id = 1U,
+                    Filename = "0001-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[1] = new Brand() {
+                    Id = 2U,
+                    Filename = "0002-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[2] = new Brand() {
+                    Id = 3U,
+                    Filename = "0003-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[3] = new Brand() {
+                    Id = 4U,
+                    Filename = "0005-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[4] = new Brand() {
+                    Id = 5U,
+                    Filename = "0006-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[5] = new Brand() {
+                    Id = 6U,
+                    Filename = "0008-01-00",
+                    EnableBalance = true
+                };
+                data.Daemon.DisplayBrands[6] = new Brand() {
+                    Id = 7U,
+                    Filename = "0009-01-00",
+                    EnableBalance = true
+                };
+            } else {
+                data.Daemon.DisplayBrands[3] = new Brand() {
+                    Id = 4U,
+                    Filename = "0005-01-00",
+                    EnableBalance = true
+                };
+            }
             data.Daemon.DisplayBrandCounts = (uint)data.Daemon.DisplayBrands.Length;
 
             data.Item.Items = new Item[5];
             for (int i = 0; i < config.emoney.credits.Length; i++) {
                 int coins = config.emoney.credits[i];
-                data.Item.Items[i].Enable = true;
-                data.Item.Items[i].Name = coins + " CREDIT" + (coins > 1 ? "S" : "");
-                data.Item.Items[i].Price = (uint)(coins * 100);
+                data.Item.Items[i].Enable = coins > 0;
+                data.Item.Items[i].Name = coins > 0 ? coins + " CREDIT" + (coins > 1 ? "S" : "") : "---";
+                data.Item.Items[i].Price = coins > 0 ? (uint)(coins * 100) : 99999;
             }
             data.Item.Counts = (uint)data.Item.Items.Length;
             data.GamePad.Enable = config.gamepad.enable;
@@ -123,6 +132,8 @@ namespace eMoneyUILink {
             data.GamePad.Sw = new ushort[8];
 
             mem.Data = data;
+
+            sound_allowed = config.emoney.sound;
 
             log_callback("Initialized");
 
@@ -159,7 +170,7 @@ namespace eMoneyUILink {
                     data.Request.RequestPayToCoin = false;
                 }
 
-                if (EMoney.PlaySound) {
+                if (EMoney.PlaySound && sound_allowed) {
                     data.Request.Sound = true;
                     data.Request.SoundData.Filename = EMoney.Result?.GetSoundEffectForBrandAndResult();
                     EMoney.PlaySound = false;

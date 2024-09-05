@@ -69,10 +69,17 @@
     <Compile Include="EMUICF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SegatoolsAPI\SegatoolsAPI.csproj">
+      <Project>{52bd5e76-26a6-40b0-8019-95a0855bfb20}</Project>
+      <Name>SegatoolsAPI</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y $(TargetPath) L:\SDVX\apm3\bepinex\plugins\$(TargetName).dll
 copy /Y $(TargetPath) L:\SDVX\apm3_amd\bepinex\plugins\$(TargetName).dll
-copy /Y $(TargetPath) T:\apm\bepinex\plugins\$(TargetName).dll</PostBuildEvent>
+copy /Y $(TargetPath) T:\apm\bepinex\plugins\$(TargetName).dll
+exit 0</PostBuildEvent>
   </PropertyGroup>
 </Project>

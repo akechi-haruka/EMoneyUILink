@@ -1,7 +1,7 @@
 ﻿using Haruka.Arcade.SEGA835Lib.Devices;
 using Haruka.Arcade.SEGA835Lib.Devices.Card;
 using Haruka.Arcade.SEGA835Lib.Serial;
-using OAS.Segatools;
+using Haruka.Arcade.SegatoolsAPI;
 using System;
 using System.Collections.Generic;
 using System.Linq;

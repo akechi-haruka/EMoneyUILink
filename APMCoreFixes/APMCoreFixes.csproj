@@ -92,9 +92,10 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y $(TargetPath) L:\SDVX\apm3\bepinex\plugins\$(TargetName).dll
-psexec \\allsux.lan taskkill /F /IM Apmv3System.exe
+rem psexec \\allsux.lan taskkill /F /IM Apmv3System.exe
 timeout /T 1
 sleep 1
-copy /Y $(TargetPath) T:\apm\BepInEx\plugins\$(TargetName).dll</PostBuildEvent>
+copy /Y $(TargetPath) T:\apm\BepInEx\plugins\$(TargetName).dll
+exit 0</PostBuildEvent>
   </PropertyGroup>
 </Project>

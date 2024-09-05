@@ -29,6 +29,7 @@ namespace eMoneyUILink
         private static ConfigEntry<String> EMoneyConfigFile;
         private static ConfigEntry<String> EMoneyUiExecutable;
         private static ConfigEntry<int> VFDPort;
+        private static ConfigEntry<bool> SegaLibLogging;
 
         public void Awake() {
 
@@ -39,6 +40,7 @@ namespace eMoneyUILink
             ConfigOpenMoneyAddress = Config.Bind("Network", "OpenMoney Endpoint", "http://127.0.0.1/openmoney/request2", "Address to OpenMoney server");
             ConfigKeychip = Config.Bind("Network", "Keychip ID", "A00E-01E00000000", "Keychip ID");
             VFDPort = Config.Bind("Real Hardware", "VFD Port", 0, "Port for VFD");
+            SegaLibLogging = Config.Bind("Real Hardware", "SegaLib Logging", true, "Enable Sega835Lib logs");
 
             Haruka.Arcade.SEGA835Lib.Debugging.Log.Mute = true;
             Haruka.Arcade.SEGA835Lib.Debugging.Log.LogMessageWritten += Log_LogMessageWritten;
@@ -52,7 +54,9 @@ namespace eMoneyUILink
         }
 
         private void Log_LogMessageWritten(Haruka.Arcade.SEGA835Lib.Debugging.LogEntry obj) {
-            Log.LogDebug("Sega835Lib: " + obj.Message);
+            if (SegaLibLogging.Value) {
+                Log.LogDebug("Sega835Lib: " + obj.Message);
+            }
         }
 
         

@@ -42,6 +42,8 @@ namespace eMoneyUILink {
             req.UserAgent = "OpenMoney/"+version;
             req.ContentType = "application/json";
             req.Method = "POST";
+            req.Timeout = 10000;
+            req.ReadWriteTimeout = 10000;
 
             byte[] bytes = Encoding.ASCII.GetBytes(request);
 
@@ -56,6 +58,10 @@ namespace eMoneyUILink {
 
             int len = (int)resp.ContentLength;
             EMoneyUILink.LogMessage("OpenMoneyWebRequest: Response length: " + len);
+            EMoneyUILink.LogMessage("OpenMoneyWebRequest: Response code: " + resp.StatusCode);
+            if (len == -1) {
+                throw new Exception("Server Error: " + resp.StatusCode);
+            }
             byte[] indata = new byte[len];
             Stream res = resp.GetResponseStream();
             res.Read(indata, 0, len);
