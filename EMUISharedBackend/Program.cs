@@ -15,8 +15,8 @@ namespace EMUISharedBackend {
 
         static void Main(string[] args) {
 
-            if (args.Length < 9) {
-                Console.WriteLine("Usage: EMUISharedBackend <app.json> <vfd_port/0> <emoneyui_exe> <openmoney_addr> <keychip> <segatools_group> <segatools_device> <segatools_broadcast> <segatools_port>");
+            if (args.Length < 10) {
+                Console.WriteLine("Usage: EMUISharedBackend <app.json> <vfd_port/0> <emoneyui_exe> <openmoney_addr> <keychip> <segatools_group> <segatools_device> <segatools_broadcast> <segatools_port> <item_name>");
                 return;
             }
 
@@ -49,7 +49,7 @@ EMUISharedBackend 0.3
             EMUIApi.AddCoinEvent(CoinEvent);
             EMUIApi.Aime = card;
 
-            EMoneyUILink.Initialize(args[0], Int32.Parse(args[1]), args[2], args[3], args[4], log_callback);
+            EMoneyUILink.Initialize(args[0], Int32.Parse(args[1]), args[2], args[3], args[4], log_callback, args[9]);
         }
 
         private static void SegatoolsAPI2_OnLogMessage(string obj) {

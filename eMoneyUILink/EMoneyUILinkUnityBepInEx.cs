@@ -28,6 +28,7 @@ namespace eMoneyUILink
         public static ConfigEntry<String> ConfigOpenMoneyAddress;
         private static ConfigEntry<String> EMoneyConfigFile;
         private static ConfigEntry<String> EMoneyUiExecutable;
+        private static ConfigEntry<String> EMoneyItemName;
         private static ConfigEntry<int> VFDPort;
         private static ConfigEntry<bool> SegaLibLogging;
 
@@ -39,13 +40,14 @@ namespace eMoneyUILink
             EMoneyUiExecutable = Config.Bind("General", "UI Executable", "C:\\apm\\emoneyUI.exe", "Path to emoneyUI.exe");
             ConfigOpenMoneyAddress = Config.Bind("Network", "OpenMoney Endpoint", "http://127.0.0.1/openmoney/request2", "Address to OpenMoney server");
             ConfigKeychip = Config.Bind("Network", "Keychip ID", "A00E-01E00000000", "Keychip ID");
+            EMoneyItemName = Config.Bind("Network", "Item Name", "OpenMoney Payment", "Item Name for the EMoney payment. This may show up in payment logs for the user.");
             VFDPort = Config.Bind("Real Hardware", "VFD Port", 0, "Port for VFD");
             SegaLibLogging = Config.Bind("Real Hardware", "SegaLib Logging", true, "Enable Sega835Lib logs");
 
             Haruka.Arcade.SEGA835Lib.Debugging.Log.Mute = true;
             Haruka.Arcade.SEGA835Lib.Debugging.Log.LogMessageWritten += Log_LogMessageWritten;
 
-            EMoneyUILink.Initialize(EMoneyConfigFile.Value, VFDPort.Value, EMoneyUiExecutable.Value, ConfigOpenMoneyAddress.Value, ConfigKeychip.Value, LogMessage);
+            EMoneyUILink.Initialize(EMoneyConfigFile.Value, VFDPort.Value, EMoneyUiExecutable.Value, ConfigOpenMoneyAddress.Value, ConfigKeychip.Value, LogMessage, EMoneyItemName.Value);
 
         }
 

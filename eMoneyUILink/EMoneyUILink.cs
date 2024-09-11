@@ -26,13 +26,15 @@ namespace eMoneyUILink {
         internal static bool cardReaderBlocked;
         internal static bool alive;
 
-        internal static String keychip_id;
-        internal static String openmoney_url;
+        internal static String keychipId;
+        internal static String openMoneyURL;
+        internal static String itemName;
 
-        public static void Initialize(string config_path, int vfd_port, string emoneyui_exe, string openmoney_addr, string keychip, Action<string> log_callback_func) {
+        public static void Initialize(string config_path, int vfd_port, string emoneyui_exe, string openmoney_addr, string keychip, Action<string> log_callback_func, string item_name) {
             log_callback = log_callback_func;
-            openmoney_url = openmoney_addr;
-            keychip_id = keychip;
+            openMoneyURL = openmoney_addr;
+            keychipId = keychip;
+            itemName = item_name;
 
             log_callback("Loading config...");
             ConfigParser config = JsonConvert.DeserializeObject<ConfigParser>(File.ReadAllText(config_path));
@@ -166,7 +168,7 @@ namespace eMoneyUILink {
                     EMoney.RequestBalance((EMoney.EMoneyBrandEnum)data.Request.BrandId);
                     data.Request.RequestBalance = false;
                 } else if (data.Request.RequestPayToCoin) {
-                    EMoney.PayAmount((EMoney.EMoneyBrandEnum)data.Request.BrandId, data.Request.Price.ToString(), (int)data.Request.Price, data.Request.Price / 100);
+                    EMoney.PayAmount((EMoney.EMoneyBrandEnum)data.Request.BrandId, itemName ?? data.Request.Price.ToString(), (int)data.Request.Price, data.Request.Price / 100);
                     data.Request.RequestPayToCoin = false;
                 }
 

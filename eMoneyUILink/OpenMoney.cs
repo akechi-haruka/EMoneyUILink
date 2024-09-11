@@ -76,7 +76,7 @@ namespace eMoneyUILink {
         }
 
         public static PaymentResponse OpenMoneyRequest(String cardid, EMoneyBrandEnum brand_id, int amount, int count, PaymentRequestType requestType, String item_name) {
-            String path = EMoneyUILink.openmoney_url;
+            String path = EMoneyUILink.openMoneyURL;
             PaymentRequest req = new PaymentRequest() {
                 version = VERSION,
                 request = requestType.ToString(),
@@ -85,7 +85,7 @@ namespace eMoneyUILink {
                 cardid = cardid,
                 count = count,
                 item_name = item_name,
-                keychip = EMoneyUILink.keychip_id
+                keychip = EMoneyUILink.keychipId
             };
             return JsonConvert.DeserializeObject<PaymentResponse>(OpenMoneyWebRequest(path, JsonConvert.SerializeObject(req), VERSION));
         }
