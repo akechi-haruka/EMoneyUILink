@@ -1,12 +1,7 @@
-﻿using Emoney.SharedMemory;
-using eMoneyUILink;
-using EMUISharedBackend.GameConfig;
+﻿using eMoneyUILink;
 using Haruka.Arcade.SEGA835Lib.Devices;
-using Haruka.Arcade.SegatoolsAPI;
-using OpenAimeIO_Managed;
 using System;
-using System.Threading;
-using static Emoney.SharedMemory.ShareMemoryAccessor;
+using Haruka.Arcade.SegatoolsAPI;
 
 namespace EMUISharedBackend {
     internal class Program {
@@ -20,11 +15,11 @@ namespace EMUISharedBackend {
                 return;
             }
 
-            SegatoolsAPI2.OnLogMessage += SegatoolsAPI2_OnLogMessage;
+            SegatoolsAPI3.OnLogMessage += SegatoolsAPI2_OnLogMessage;
 
             Console.WriteLine(@"----------------------------------------
-EMUISharedBackend 0.3
-2024 Haruka
+EMUISharedBackend 0.3.1
+2024-2025 Haruka
 ----------------------------------------");
 
             Console.WriteLine("Args: " + String.Join(",", args));
@@ -37,14 +32,6 @@ EMUISharedBackend 0.3
             }
             card.Segatools.OnConnectedChange += Segatools_OnConnectedChange;
             card.Segatools.OnCardReaderBlocking += Segatools_OnCardReaderBlocking;
-            /*int time = 10;
-            while (!card.Segatools.Connected) {
-                card.Segatools.SendPing();
-                Thread.Sleep(1000);
-                if (time-- < 0) {
-                    break;
-                }
-            }*/
 
             EMUIApi.AddCoinEvent(CoinEvent);
             EMUIApi.Aime = card;

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 
 namespace Haruka.Arcade.SegatoolsAPI {
-    public class SegatoolsAPI2 {
+    public class SegatoolsAPI3 {
 
         public enum Packet : byte {
             Ping = 20,
@@ -59,7 +59,7 @@ namespace Haruka.Arcade.SegatoolsAPI {
         public event Action<bool> OnCardReaderBlocking;
         public static event Action<string> OnLogMessage;
 
-        public SegatoolsAPI2(byte groupid, byte deviceid, String broadcast = "255.255.255.255", int port = 5364) {
+        public SegatoolsAPI3(byte groupid, byte deviceid, String broadcast = "255.255.255.255", int port = 5364) {
             OnLogMessage?.Invoke("Created group " + groupid + ", device " + deviceid + " with " + broadcast + ":" + port);
             this.GroupId = groupid;
             this.DeviceId = deviceid;

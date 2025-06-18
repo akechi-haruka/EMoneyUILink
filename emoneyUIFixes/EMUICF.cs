@@ -21,7 +21,6 @@ namespace emoneyUIFixes {
 
         public static ConfigEntry<bool> ConfigShrinkHitbox;
         public static ConfigEntry<int> ConfigDelayStart;
-        public static ConfigEntry<bool> ConfigAllowOptionsGreater500;
         public static ConfigEntry<bool> ConfigSegatoolsAddGameExitButton;
         public static ConfigEntry<bool> ConfigProcessAddGameExitButton;
         public static ConfigEntry<string> ConfigProcessExitList;
@@ -31,16 +30,15 @@ namespace emoneyUIFixes {
 
         public static ManualLogSource Log;
 
-        internal static SegatoolsAPI2 segatools;
+        internal static SegatoolsAPI3 segatools;
 
         public void Awake() {
             Log = Logger;
 
-            SegatoolsAPI2.OnLogMessage += SegatoolsAPI2_OnLogMessage;
+            SegatoolsAPI3.OnLogMessage += SegatoolsAPI2_OnLogMessage;
 
             ConfigShrinkHitbox = Config.Bind("General", "Shrink Window Hitbox", true, "Shrinks the (invisible) window hitbox for less risk of touch swallowing if being close to eMoneyUI");
             ConfigDelayStart = Config.Bind("General", "Startup Delay", 2, "Time delay in seconds until eMoneyUI shows up");
-            ConfigAllowOptionsGreater500 = Config.Bind("General", "Allow items more expensive than 500 yen", true, "Allows buttons to contain items up to 10000 yen");
             ConfigProcessAddGameExitButton = Config.Bind("Segatools API", "Add Exit Game Button", true, "Adds a button that kills all processes from the process termination list.");
             ConfigProcessExitList = Config.Bind("General", "Process Termination List", "", "Comma-seperated list of processes to terminate.");
 
@@ -52,7 +50,7 @@ namespace emoneyUIFixes {
             Harmony.CreateAndPatchAll(typeof(Patches), "eu.haruka.gmg.apm.fixes.emoneyui.main");
 
             if (ConfigSegatoolsAddGameExitButton.Value) {
-                segatools = new SegatoolsAPI2((byte)ConfigSegatoolsGID.Value, (byte)ConfigSegatoolsDID.Value, ConfigSegatoolsBC.Value);
+                segatools = new SegatoolsAPI3((byte)ConfigSegatoolsGID.Value, (byte)ConfigSegatoolsDID.Value, ConfigSegatoolsBC.Value);
             }
 
             Log.LogInfo("Loaded");

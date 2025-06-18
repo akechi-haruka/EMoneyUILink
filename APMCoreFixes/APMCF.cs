@@ -19,7 +19,7 @@ using UnityEngine.UI;
 
 namespace APMCoreFixes {
 
-    [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.1")]
+    [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.2")]
     [BepInProcess("Apmv3System")]
     public class APMCF : BaseUnityPlugin {
 
@@ -39,7 +39,6 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
-        public static ConfigEntry<KeyboardShortcut> ConfigDebugFakeAimeRead;
 
         public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
         public static ConfigEntry<int> ConfigIO4StickDeadzone;
@@ -55,14 +54,13 @@ namespace APMCoreFixes {
 
             ConfigUnencryptedABaaSGs = Config.Bind(CAT_NETWORK, "Unencrypted ABaaSGs Communication", true, "Disabled ABaaSGs encryption and compression");
             ConfigFakeABaaSLinkOnline = Config.Bind(CAT_NETWORK, "Fake ABaaSLink Online", true, "Simulates the matching server being online. Serves no purpose except getting a green online indicator.");
-            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", true, "Disables VHD mounting/unmounting. Use if using decrypted data.");
+            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", true, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
             ConfigDisableOPTPresenceCheck = Config.Bind(CAT_HOME_USE, "Disable .opt Presence Check", true, "Disables the required existence of (any) .opt files in game directories.");
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
-            ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", true, "Instead of amdaemon, use .bat files to launch games, see readme");
-            ConfigDebugFakeAimeRead = Config.Bind(CAT_DEBUG, "Aime reader debug scan key", new KeyboardShortcut(KeyCode.F11), "for development use");
+            ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", true, new ConfigDescription("Instead of amdaemon, use .bat files to launch games, see readme. Use only if not using segatools mounthook", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
 
-            ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires a modified common.json)");
+            ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires config_hook.json, see readme)");
             ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
             ConfigIO4AxisXInvert = Config.Bind(CAT_INPUT, "X Axis Invert", false, "Inverts the X axis");
             ConfigIO4AxisYInvert = Config.Bind(CAT_INPUT, "Y Axis Invert", false, "Inverts the Y axis");
@@ -71,6 +69,7 @@ namespace APMCoreFixes {
             Harmony.CreateAndPatchAll(typeof(APMDebugPatches), "eu.haruka.gmg.apm.fixes.debug");
             Harmony.CreateAndPatchAll(typeof(MiscPatches), "eu.haruka.gmg.apm.fixes.misc");
             Harmony.CreateAndPatchAll(typeof(AppMounterPatches), "eu.haruka.gmg.apm.fixes.vhd");
+            
         }
 
         public void Update() {
@@ -104,35 +103,7 @@ namespace APMCoreFixes {
                 }
             }
 
-            if (ConfigDebugFakeAimeRead.Value.IsDown()) {
-                new Thread(AimeDebugReadStart).Start();
-            }
         }
         
-        private void AimeDebugReadStart() {
-            Log.LogMessage("aime debug read start");
-            var aime = Aime.Units[0];
-            while (aime.IsBusy) {
-                Log.LogMessage("waiting");
-                Thread.Sleep(1000);
-            }
-            aime.Start(AimeCommand.Scan);
-            Log.LogMessage("Scan start");
-            while (aime.IsBusy) {
-                Log.LogMessage("waiting");
-                Thread.Sleep(1000);
-            }
-            
-            if (!aime.HasResult) {
-                Log.LogMessage("no result!");
-                return;
-            }
-
-            if (aime.HasError) {
-                Log.LogMessage("Error: " + aime.ErrorInfo.Number + ", " + aime.ErrorInfo.Category + "; " + aime.ErrorInfo.Message);
-            }
-            Log.LogMessage("AC:" + aime.Result.AccessCode);
-            Log.LogMessage("AK;" + aime.Result.SegaIdAuthKey);
-        }
     }
 }

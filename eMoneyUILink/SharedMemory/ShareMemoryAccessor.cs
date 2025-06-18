@@ -1,8 +1,5 @@
 ﻿using eMoneyUILink;
-using Haruka.Arcade.SEGA835Lib.Debugging;
-using SharedMemory;
 using System;
-using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;

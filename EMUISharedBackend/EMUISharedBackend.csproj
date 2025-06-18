@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net35</TargetFramework>
+    <TargetFramework>net481</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>
@@ -19,14 +19,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\eMoneyUILink\eMoneyUILink.csproj" />
-    <ProjectReference Include="..\SegatoolsAPI\SegatoolsAPI.csproj" />
+    <Reference Include="SEGA835Lib">
+      <HintPath>..\..\SEGA835Lib\SEGA835Lib\bin\Debug\net35\SEGA835Lib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="SEGA835Lib">
-      <HintPath>..\..\835Lib\SEGA835Lib\bin\Release\net35\SEGA835Lib.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\eMoneyUILink\eMoneyUILink.csproj" />
+    <ProjectReference Include="..\SegatoolsAPI\SegatoolsAPI.csproj" />
   </ItemGroup>
 
 </Project>

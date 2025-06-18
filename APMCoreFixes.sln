@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APMHeadbananaLink", "APMHea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SegatoolsAPI", "SegatoolsAPI\SegatoolsAPI.csproj", "{52BD5E76-26A6-40B0-8019-95A0855BFB20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SHUT", "SHUT\SHUT.csproj", "{616AC3A3-9909-4517-BC45-0F7155F9CC71}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_OLDAMD|Any CPU = Debug_OLDAMD|Any CPU
@@ -60,12 +58,6 @@ Global
 		{52BD5E76-26A6-40B0-8019-95A0855BFB20}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52BD5E76-26A6-40B0-8019-95A0855BFB20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52BD5E76-26A6-40B0-8019-95A0855BFB20}.Release|Any CPU.Build.0 = Release|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Debug_OLDAMD|Any CPU.ActiveCfg = Debug|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Debug_OLDAMD|Any CPU.Build.0 = Debug|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{616AC3A3-9909-4517-BC45-0F7155F9CC71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,14 +3,11 @@ using Haruka.Arcade.SEGA835Lib.Devices.Card;
 using Haruka.Arcade.SEGA835Lib.Serial;
 using Haruka.Arcade.SegatoolsAPI;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace EMUISharedBackend {
     internal class SegatoolsCardReader : CardReader {
 
-        public SegatoolsAPI2 Segatools { get; private set; }
+        public SegatoolsAPI3 Segatools { get; private set; }
 
         private byte group;
         private byte device;
@@ -21,7 +18,7 @@ namespace EMUISharedBackend {
         private byte[] card;
         private CardType? cardType;
 
-        public SegatoolsCardReader(byte group, byte device, string bcaddr, int port) {
+        public SegatoolsCardReader(byte group, byte device, string bcaddr, int port) :base(0, 0) {
             this.group = group;
             this.device = device;
             this.bcaddr = bcaddr;
@@ -29,7 +26,7 @@ namespace EMUISharedBackend {
         }
 
         public override DeviceStatus Connect() {
-            Segatools = new SegatoolsAPI2(group, device, bcaddr, port);
+            Segatools = new SegatoolsAPI3(group, device, bcaddr, port);
             Segatools.OnAime += Segatools_OnAime;
             Segatools.OnFelica += Segatools_OnFelica;
             Segatools.Start();
