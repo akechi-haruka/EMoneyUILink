@@ -52,13 +52,13 @@ namespace APMCoreFixes {
         public void Awake() {
             Log = Logger;
 
-            ConfigUnencryptedABaaSGs = Config.Bind(CAT_NETWORK, "Unencrypted ABaaSGs Communication", true, "Disabled ABaaSGs encryption and compression");
+            ConfigUnencryptedABaaSGs = Config.Bind(CAT_NETWORK, "Unencrypted ABaaSGs Communication", false, "Disabled ABaaSGs encryption and compression");
             ConfigFakeABaaSLinkOnline = Config.Bind(CAT_NETWORK, "Fake ABaaSLink Online", true, "Simulates the matching server being online. Serves no purpose except getting a green online indicator.");
-            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", true, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
+            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", false, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
             ConfigDisableOPTPresenceCheck = Config.Bind(CAT_HOME_USE, "Disable .opt Presence Check", true, "Disables the required existence of (any) .opt files in game directories.");
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
-            ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", true, new ConfigDescription("Instead of amdaemon, use .bat files to launch games, see readme. Use only if not using segatools mounthook", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
+            ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", false, new ConfigDescription("Instead of amdaemon, use .bat files to launch games, see readme. Use only if not using segatools mounthook", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
 
             ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires config_hook.json, see readme)");
             ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
