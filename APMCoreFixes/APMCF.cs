@@ -39,6 +39,8 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
+        public static ConfigEntry<bool> ConfigShowMouse;
+        public static ConfigEntry<bool> ConfigShowClock;
 
         public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
         public static ConfigEntry<int> ConfigIO4StickDeadzone;
@@ -59,6 +61,8 @@ namespace APMCoreFixes {
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
             ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", false, new ConfigDescription("Instead of amdaemon, use .bat files to launch games, see readme. Use only if not using segatools mounthook", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
+            ConfigShowMouse = Config.Bind(CAT_HOME_USE, "Show Mouse", false, "Shows the mouse cursor.");
+            ConfigShowClock = Config.Bind(CAT_HOME_USE, "Show Clock", true, "Shows a clock on the game selection screen.");
 
             ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires config_hook.json, see readme)");
             ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
@@ -79,26 +83,29 @@ namespace APMCoreFixes {
                 Log.LogInfo("Analog initialized");
             }
 
-            if (!Cursor.visible && GeneralSettingManager.manager.Info.SubSystemTestSetting.UseMouseInput) {
+            if (!Cursor.visible && ConfigShowMouse.Value) {
                 Cursor.visible = true;
             }
 
             // Clock on game selection screen
-            DateTime now = DateTime.Now;
-            if (lastClockUpdate.Second != now.Second) {
-                lastClockUpdate = now;
-                if (clock == null || !clock.activeInHierarchy) {
-                    GameObject text = GameObject.Find("MainCanvas/HeaderCanvas/CoopGroup");
-                    if (text != null) {
-                        clock = UnityEngine.Object.Instantiate(text, text.transform.parent);
-                        clock.transform.position += new Vector3(0, -30);
-                        clock.SetActive(true);
+            if (ConfigShowClock.Value) {
+                DateTime now = DateTime.Now;
+                if (lastClockUpdate.Second != now.Second) {
+                    lastClockUpdate = now;
+                    if (clock == null || !clock.activeInHierarchy) {
+                        GameObject text = GameObject.Find("MainCanvas/HeaderCanvas/CoopGroup");
+                        if (text != null) {
+                            clock = UnityEngine.Object.Instantiate(text, text.transform.parent);
+                            clock.transform.position += new Vector3(0, -30);
+                            clock.SetActive(true);
+                        }
                     }
-                }
-                if (clock != null) {
-                    Text textComponent = clock.GetComponent<Text>();
-                    if (textComponent != null) {
-                        textComponent.text = lastClockUpdate.ToString();
+
+                    if (clock != null) {
+                        Text textComponent = clock.GetComponent<Text>();
+                        if (textComponent != null) {
+                            textComponent.text = lastClockUpdate.ToString();
+                        }
                     }
                 }
             }
