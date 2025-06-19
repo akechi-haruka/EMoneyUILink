@@ -64,6 +64,9 @@ namespace APMCoreFixes {
 
         [HarmonyPostfix, HarmonyPatch(typeof(ABaaSGs), "downloadAppData", typeof(byte), typeof(string), typeof(Action<ABaaSGs.ABAASGS_STATUS, string>))]
         static IEnumerator downloadAppData(IEnumerator result, ABaaSGs __instance, byte requestNo, string requestJson, Action<ABaaSGs.ABAASGS_STATUS, string> callback) {
+            if (!APMCF.ConfigAddXFolders.Value) {
+                return __instance.sendData(requestNo, requestJson, callback, new Func<byte, string, ABaaSGs.LIBAPI_STATUS>(__instance.downloadAppData));
+            }
 
             StringBuilder folderstring = new StringBuilder();
 

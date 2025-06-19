@@ -26,7 +26,6 @@ namespace APMCoreFixes {
         private const String CAT_HOME_USE = "Home Use";
         private const String CAT_INPUT = "Input";
         private const String CAT_NETWORK = "Network";
-        private const String CAT_DEBUG = "Debug";
 
         public static ManualLogSource Log;
         public static InputId AnalogX { get; private set; }
@@ -41,6 +40,7 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
         public static ConfigEntry<bool> ConfigShowMouse;
         public static ConfigEntry<bool> ConfigShowClock;
+        public static ConfigEntry<bool> ConfigAddXFolders;
 
         public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
         public static ConfigEntry<int> ConfigIO4StickDeadzone;
@@ -63,6 +63,7 @@ namespace APMCoreFixes {
             ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use .bat launchers", false, new ConfigDescription("Instead of amdaemon, use .bat files to launch games, see readme. Use only if not using segatools mounthook", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
             ConfigShowMouse = Config.Bind(CAT_HOME_USE, "Show Mouse", false, "Shows the mouse cursor.");
             ConfigShowClock = Config.Bind(CAT_HOME_USE, "Show Clock", true, "Shows a clock on the game selection screen.");
+            ConfigAddXFolders = Config.Bind(CAT_NETWORK, "Add X-APMCF-Folders Field", true, new ConfigDescription("Adds all existing folders to an extra field in network communication when fetching game list.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
 
             ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires config_hook.json, see readme)");
             ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
