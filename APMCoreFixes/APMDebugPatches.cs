@@ -109,10 +109,10 @@ namespace APMCoreFixes {
             APMCF.Log.LogDebug("FileStream " + mode + ": " + path);
         }*/
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Path), "GetTempPath")]
+        /*[HarmonyPostfix, HarmonyPatch(typeof(Path), "GetTempPath")]
         static void GetTempPath(ref string __result) {
             __result = GeneralSettingManager.manager.Info.setupSetting.imageRootPath;
             APMCF.Log.LogDebug("Temp path changed to: " + __result);
-        }
+        }*/
     }
 }
