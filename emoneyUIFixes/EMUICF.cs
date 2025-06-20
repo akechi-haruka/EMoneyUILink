@@ -69,12 +69,6 @@ namespace emoneyUIFixes {
 
     public class Patches {
 
-        [HarmonyPostfix, HarmonyPatch(typeof(Path), "GetTempPath")]
-        static void GetTempPath(ref string __result) {
-            __result = "apm\\appdata\\";
-            EMUICF.Log.LogDebug("Temp path changed to: " + __result);
-        }
-
         [HarmonyPostfix, HarmonyPatch(typeof(ShareMemoryAccessor), "Open")]
         static void Open(ref ShareMemoryAccessor.Result __result) {
             EMUICF.Log.LogDebug("Shared memory access: " + __result);
