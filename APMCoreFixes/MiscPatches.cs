@@ -1,21 +1,16 @@
 ﻿using am.abaas;
 using AMDaemon;
-using AMDaemon.Abaas;
-using Apm.System.Setting.NonVolatile;
 using Apm.System.Setting.Volatile;
 using Apm.System.UnityUtil;
-using Apm.System.Util;
 using Apm.System.Warning;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using UnityEngine.UIElements;
 using static Apm.System.Daemon.Input;
 using static Apm.System.Error.ErrorResource;
-using Version = AMDaemon.Version;
+using SceneManager = Apm.System.GameIconList.SceneManager;
 
 namespace APMCoreFixes {
     internal class MiscPatches {
@@ -42,22 +37,28 @@ namespace APMCoreFixes {
             }
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(AMDaemon.Apm), "StartGame")]
-        public static bool StartGame(ref bool __result, Version appVersion, string gameId, bool withAime) {
+        [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "GameStart")]
+        public static bool GameStart(string subGameId, string version, AppAdditionalInfo info) {
             if (!APMCF.ConfigUseBatchLaunchSystem.Value) {
                 return true;
             }
-            __result = false;
-            APMCF.Log.LogInfo("Launching " + gameId + "...");
-            Thread.Sleep(1000); // let sound effect finish
-            AppInfo game = AppListManager.GetInstance().Info.List.Find(p => p.subGameId == gameId);
+            APMCF.Log.LogInfo("Launching " + subGameId + "...");
+            AppInfo game = AppListManager.GetInstance().Info.List.Find(p => p.subGameId == subGameId);
             if (game == null) {
-                APMCF.Log.LogError("No such game entry: " + gameId);
+                APMCF.Log.LogError("No such game entry: " + subGameId);
                 Error.Set((int)ErrorNumber.ApmUnexpectedGameProgramFailure);
                 return false;
             }
             string game_path = Path.GetDirectoryName(game.paths.images.Original);
             APMCF.Log.LogInfo("Directory is: " + game_path);
+
+            if (!File.Exists(Path.Combine(game_path, "game.bat"))) {
+                APMCF.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
+                return true;
+            }
+            
+            Thread.Sleep(1000); // let sound effect finish
+            
             try {
                 Process p = Process.Start(new ProcessStartInfo("subst.exe", "W: " + game_path) {
                     CreateNoWindow = true,
@@ -73,7 +74,6 @@ namespace APMCoreFixes {
                 if (p.ExitCode != 0) {
                     throw new Exception("Return code of subst is " + p.ExitCode);
                 }
-                __result = true;
             } catch (Exception ex) {
                 APMCF.Log.LogError("Failed to set virtual drive: " + ex);
                 Error.Set((int)ErrorNumber.CommonUnexpectedGameProgramFailure);
@@ -149,7 +149,7 @@ namespace APMCoreFixes {
             var ay = unit.GetAnalog(APMCF.AnalogY).Value;
             double x = map(ax, 0, 1, -1, 1);
             double y = map(ay, 0, 1, -1, 1);
-            APMCF.Log.LogDebug(ax + "/" + ay);
+            //APMCF.Log.LogDebug(ax + "/" + ay);
 
             if (APMCF.ConfigIO4AxisXInvert.Value) {
                 x = -x;
