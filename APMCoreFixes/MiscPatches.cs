@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Apm.System.Util.Log;
 using static Apm.System.Daemon.Input;
 using static Apm.System.Error.ErrorResource;
 using SceneManager = Apm.System.GameIconList.SceneManager;
@@ -38,7 +39,7 @@ namespace APMCoreFixes {
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "GameStart")]
-        public static bool GameStart(string subGameId, string version, AppAdditionalInfo info) {
+        public static bool GameStart(string subGameId, string version, AppAdditionalInfo info, SceneManager __instance) {
             if (!APMCF.ConfigUseBatchLaunchSystem.Value) {
                 return true;
             }
@@ -79,6 +80,23 @@ namespace APMCoreFixes {
                 Error.Set((int)ErrorNumber.CommonUnexpectedGameProgramFailure);
                 return false;
             }
+            
+            __instance.isStartingGame = true;
+            __instance.launchSubGameId = subGameId;
+            __instance.launchVersion = version;
+            if (!__instance.bootApplication)
+            {
+                __instance.isMountEnd = true;
+                __instance.isStartGameEnd = true;
+                return false;
+            }
+            SystemConfigManager.GetInstance().Info.EMoney = info.EMoney;
+            SystemConfigManager.GetInstance().Info.Ui = info.Ui;
+            SystemConfigManager.GetInstance().Info.GamePad = info.GamePad;
+            PlayLogSender.Save("Launch " + subGameId + " Ver." + version);
+            __instance.abaasGsController.GetComponent<Apm.System.AbaasGs.Main>().Cancel();
+            __instance.daemonMain.StartGame(subGameId, __instance.OnStartGameEnd);
+            __instance.OnMountEnd(true);
             return false;
         }
 
