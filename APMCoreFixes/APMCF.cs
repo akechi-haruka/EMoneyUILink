@@ -38,13 +38,13 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
+        public static ConfigEntry<String> ConfigOptionDirectory;
         public static ConfigEntry<bool> ConfigShowMouse;
         public static ConfigEntry<bool> ConfigShowClock;
         public static ConfigEntry<bool> ConfigAddXFolders;
 
         public static ConfigEntry<bool> ConfigAMDAnalogInsteadOfButtons;
         public static ConfigEntry<int> ConfigIO4StickDeadzone;
-        public static ConfigEntry<bool> ConfigHardTranslations;
         public static ConfigEntry<bool> ConfigIO4AxisXInvert;
         public static ConfigEntry<bool> ConfigIO4AxisYInvert;
 
@@ -61,6 +61,7 @@ namespace APMCoreFixes {
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
             ConfigUseBatchLaunchSystem = Config.Bind(CAT_HOME_USE, "Use root .bat launchers", true, new ConfigDescription("If a game.bat is placed outside the App directory, launch that directly instead of via amdaemon / mount routines. See readme for more information."));
+            ConfigOptionDirectory = Config.Bind(CAT_HOME_USE, "Option directory", "option", new ConfigDescription("If root .bat launchers are enabled, set the option directory here (same as in segatools.ini, may be absolute or relative). See readme for more information."));
             ConfigShowMouse = Config.Bind(CAT_HOME_USE, "Show Mouse", false, "Shows the mouse cursor.");
             ConfigShowClock = Config.Bind(CAT_HOME_USE, "Show Clock", true, "Shows a clock on the game selection screen.");
             ConfigAddXFolders = Config.Bind(CAT_NETWORK, "Add X-APMCF-Folders Field", true, new ConfigDescription("Adds all existing folders to an extra field in network communication when fetching game list.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));

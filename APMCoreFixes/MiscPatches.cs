@@ -8,6 +8,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using Apm.System.AbaasLink;
 using Apm.System.Util.Log;
 using static Apm.System.Daemon.Input;
 using static Apm.System.Error.ErrorResource;
@@ -52,6 +53,10 @@ namespace APMCoreFixes {
             }
             string game_path = Path.GetDirectoryName(game.paths.images.Original);
             APMCF.Log.LogInfo("Directory is: " + game_path);
+            if (game_path.StartsWith("C:\\Mount\\Option")) {
+                game_path = game_path.Replace("C:\\Mount\\Option", APMCF.ConfigOptionDirectory.Value);
+                APMCF.Log.LogInfo("Optionified directory is: " + game_path);
+            }
 
             if (!File.Exists(Path.Combine(game_path, "game.bat"))) {
                 APMCF.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
@@ -196,6 +201,18 @@ namespace APMCoreFixes {
                     isOff(input.sw);
                 }
             }
+        }
+
+        [HarmonyPostfix, HarmonyPatch(typeof(Main), "Initialize")]
+        static void Initialize(Main __instance) {
+            __instance.abaasLink.SetDebugLevel(99);
+            __instance.abaasLink.SetDebugOutputFunc(debugfunc);
+            APMCF.Log.LogInfo("Installed AbaasLink debugging");
+            APMCF.Log.LogInfo("Server URI: " + __instance.daemonMain.AllNet.AbaasLinkServerName);
+        }
+
+        private static void debugfunc(string message) {
+            APMCF.Log.LogInfo("AbaasLink: " + message);
         }
     }
 }
