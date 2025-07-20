@@ -22,13 +22,19 @@ namespace APMHeadbananaLink {
 
         [DllImport("apmHeadphoneVolume", EntryPoint = "apmHeadphoneChannelsSet")]
         private static extern void ApmHeadphoneChannelsSet([MarshalAs(UnmanagedType.LPArray)]  int[] chanels, int len);
+        
+        [DllImport("apmHeadphoneVolume", EntryPoint = "apmHeadphoneVolumeSetFullRange")]
+        private static extern void ApmHeadphoneVolumeSetFullRange(bool full_range);
 
         private ConfigEntry<String> ConfigChannelList;
+        private ConfigEntry<bool> ConfigFullRange;
 
         public void Awake() {
 
             ConfigChannelList = Config.Bind("General", "Headphone Channels", "2,3", "A comma seperated list of channels that should be manipulated by APMHeadbanana");
+            ConfigFullRange = Config.Bind("General", "Use Full Range", false, "By default, the headphone audio slider only goes up to 50% system volume, this will make it go up to 100%.");
             ConfigChannelList.SettingChanged += ConfigChannelList_SettingChanged;
+            ConfigFullRange.SettingChanged += ConfigChannelList_SettingChanged;
 
             try {
                 Logger.LogInfo("BANANA: version " +  ApmHeadbananaVersionGet());
@@ -59,6 +65,7 @@ namespace APMHeadbananaLink {
             } else {
                 Logger.LogError("Channel list is empty");
             }
+            ApmHeadphoneVolumeSetFullRange(ConfigFullRange.Value);
         }
     }
 }
