@@ -28,16 +28,18 @@ namespace APMHeadbananaLink {
 
         private ConfigEntry<String> ConfigChannelList;
         private ConfigEntry<bool> ConfigFullRange;
+        private int version;
 
         public void Awake() {
 
             ConfigChannelList = Config.Bind("General", "Headphone Channels", "2,3", "A comma seperated list of channels that should be manipulated by APMHeadbanana");
-            ConfigFullRange = Config.Bind("General", "Use Full Range", false, "By default, the headphone audio slider only goes up to 50% system volume, this will make it go up to 100%.");
+            ConfigFullRange = Config.Bind("General", "Use Full Range", false, "By default, the headphone audio slider only goes up to 50% system volume, this will make it go up to 100%. Requires version 2.");
             ConfigChannelList.SettingChanged += ConfigChannelList_SettingChanged;
             ConfigFullRange.SettingChanged += ConfigChannelList_SettingChanged;
 
+            version = ApmHeadbananaVersionGet();
             try {
-                Logger.LogInfo("BANANA: version " +  ApmHeadbananaVersionGet());
+                Logger.LogInfo("BANANA: version " + version);
             } catch {
                 Logger.LogError("NO BANANA.");
                 return;
@@ -65,7 +67,10 @@ namespace APMHeadbananaLink {
             } else {
                 Logger.LogError("Channel list is empty");
             }
-            ApmHeadphoneVolumeSetFullRange(ConfigFullRange.Value);
+
+            if (version >= 2) {
+                ApmHeadphoneVolumeSetFullRange(ConfigFullRange.Value);
+            }
         }
     }
 }
