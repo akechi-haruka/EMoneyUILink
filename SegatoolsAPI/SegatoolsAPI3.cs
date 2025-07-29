@@ -7,8 +7,16 @@ using System.Text;
 using System.Threading;
 
 namespace Haruka.Arcade.SegatoolsAPI {
+    
+    /// <summary>
+    /// Class for interacting with SegAPI.
+    /// https://github.com/akechi-haruka/segapi
+    /// </summary>
     public class SegatoolsAPI3 {
 
+        /// <summary>
+        /// Valid packet ID values.
+        /// </summary>
         public enum Packet : byte {
             Ping = 20,
             Ack = 21,
@@ -26,45 +34,96 @@ namespace Haruka.Arcade.SegatoolsAPI {
             ExitGame = 34,
         }
 
-        public enum SequenceStatus : byte {
-            Start = 0,
-            Continue = 1,
-            End = 2
-        }
-
+        /// <summary>
+        /// The currently configured group ID.
+        /// </summary>
         public byte GroupId { get; }
+        
+        /// <summary>
+        /// The currently configured device ID.
+        /// </summary>
         public byte DeviceId { get; }
+        
+        /// <summary>
+        /// The currently configured UDP broadcast address.
+        /// </summary>
         public IPAddress BroadcastAddress { get; }
+        
+        /// <summary>
+        /// The currently configured UDP port.
+        /// </summary>
         public int Port { get; }
+        
+        /// <summary>
+        /// True if the API listener is running.
+        /// </summary>
         public bool Running { get; private set; }
-        private bool _connected;
+        
+        private bool connected;
+        
+        /// <summary>
+        /// True if anything was received on the API listener.
+        /// </summary>
         public bool Connected {
-            get => _connected;
+            get => connected;
             set {
-                _connected = value;
+                connected = value;
                 OnConnectedChange?.Invoke(value);
             }
         }
         private readonly UdpClient udp;
         private Thread thread;
 
+        /// <summary>
+        /// Fired when a TEST packet is received.
+        /// </summary>
         public event Action OnTest;
+        /// <summary>
+        /// Fired when a SERVICE packet is received.
+        /// </summary>
         public event Action OnService;
-        public event Action OnCredit;
+        /// <summary>
+        /// Fired when a CREDIT packet is received.
+        /// </summary>
+        public event Action<int> OnCredit;
+        /// <summary>
+        /// Fired when a EXIT_GAME packet is received.
+        /// </summary>
         public event Action OnExitGame;
+        /// <summary>
+        /// Fired when the connection status changes.
+        /// </summary>
         public event Action<bool> OnConnectedChange;
+        /// <summary>
+        /// Fired when a FeliCa card is received.
+        /// </summary>
         public event Action<byte[]> OnFelica;
+        /// <summary>
+        /// Fired when a Aime card is received.
+        /// </summary>
         public event Action<byte[]> OnAime;
-        public event Action<string> OnAuthorizationRequested;
+        /// <summary>
+        /// Fired when a BLOCK_CARD_READER packet is received.
+        /// </summary>
         public event Action<bool> OnCardReaderBlocking;
+        /// <summary>
+        /// Fired when a message should be written to log.
+        /// </summary>
         public static event Action<string> OnLogMessage;
 
+        /// <summary>
+        /// Creates a new SegAPI listener.
+        /// </summary>
+        /// <param name="groupid">The group ID. Groups do not see each other.</param>
+        /// <param name="deviceid">The device ID. All devices in the same group see each other.</param>
+        /// <param name="broadcast">The UDP broadcast address.</param>
+        /// <param name="port">The UDP port.</param>
         public SegatoolsAPI3(byte groupid, byte deviceid, String broadcast = "255.255.255.255", int port = 5364) {
             OnLogMessage?.Invoke("Created group " + groupid + ", device " + deviceid + " with " + broadcast + ":" + port);
-            this.GroupId = groupid;
-            this.DeviceId = deviceid;
-            this.BroadcastAddress = IPAddress.Parse(broadcast);
-            this.Port = port;
+            GroupId = groupid;
+            DeviceId = deviceid;
+            BroadcastAddress = IPAddress.Parse(broadcast);
+            Port = port;
             udp = new UdpClient() {
                 EnableBroadcast = true,
                 ExclusiveAddressUse = false
@@ -73,6 +132,9 @@ namespace Haruka.Arcade.SegatoolsAPI {
             udp.Client.Bind(new IPEndPoint(IPAddress.Any, Port));
         }
 
+        /// <summary>
+        /// Starts the SegAPI listener. No-op if already started.
+        /// </summary>
         public void Start() {
             if (Running) { return; }
             OnLogMessage?.Invoke("Starting device ID " + GroupId);
@@ -117,6 +179,9 @@ namespace Haruka.Arcade.SegatoolsAPI {
             Running = false;
         }
 
+        /// <summary>
+        /// Stops the SegAPI listener. No-op if already stopped.
+        /// </summary>
         public void Stop() {
             Running = false;
             try {
@@ -139,7 +204,11 @@ namespace Haruka.Arcade.SegatoolsAPI {
                 OnService?.Invoke();
                 Send(pt, Packet.Ack, new byte[] { (byte)id });
             } else if (id == Packet.Credit) {
-                OnCredit?.Invoke();
+                int credit = 1;
+                if (inner.Length > 0) {
+                    credit = inner[0];
+                }
+                OnCredit?.Invoke(credit);
                 Send(pt, Packet.Ack, new byte[] { (byte)id });
             } else if (id == Packet.CardReadFelica) {
                 OnFelica?.Invoke(inner);
@@ -165,14 +234,6 @@ namespace Haruka.Arcade.SegatoolsAPI {
             Array.Copy(data, 0, outdata, 4, data.Length);
             OnLogMessage?.Invoke("Sending packet " + id + " to " + pt);
             udp.Send(outdata, outdata.Length, pt);
-        }
-
-        internal void SendKillRequest() {
-            throw new NotImplementedException();
-        }
-
-        public void SendSequenceStatus(SequenceStatus info) {
-            Send(new IPEndPoint(BroadcastAddress, Port), Packet.PlaySequence, new byte[] { (byte)info });
         }
 
         public void SetVFDMessage(String str) {
