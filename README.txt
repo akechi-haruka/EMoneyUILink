@@ -8,7 +8,6 @@ See also: https://github.com/akechi-haruka/APMv3MenuTranslation
 
 Adds some QoL features to the launcher.
 
-* Disable ABaasGS encryption / Fake ABaasLink online status
 * Disable checks for file names and .opt files
 * Add a clock
 * Show mouse cursor
@@ -28,30 +27,22 @@ APMHeadbanana (Audio control replacement dll - control arbitary audio channels w
 Adds some QoL features to eMoneyUI:
 
 * Shrinks the hitbox for the buttons (useful in touch games)
-* Delay startup
 * SegAPI integration
     - Add an "exit game" button
     
---- eMoneyUILink ---
-
-Library for connecting the E-Money UI memory to OpenMoney.
-
---- EMUISharedBackend ---
+--- EXMoney ---
 
 Integrates eMoneyUI into non-APM games via SegAPI.
 
 This requires the game to run in windowed/borderless.
 
-Usage: EMUISharedBackend <app.json> <vfd_port/0> <emoneyui_exe> <openmoney_addr> <keychip> <segatools_group> <segatools_device> <segatools_broadcast> <segatools_port> <item_name>
-All arguments are required.
- - app.json: Path to the game's app.json file (from the APM option directory)
- - vfd_port: COM port to the VFD, or 0 to disable.
- - emoneyui_exe: Path to the eMoneyUI.exe from the APM launcher directory
- - openmoney_addr: Address to the OpenMoney server
- - keychip: Keychip ID
- - segatools_group: SegAPI Group ID
- - segatools_device: SegAPI Device ID
- - segatools_broadcast: SegAPI Broadcast address
- - segatools_port: SegAPI Port (use 5364)
- - item_name: The name of the purchased item (use Credit)
- 
+Basic Usage:
+
+Have a game with SegAPI (minimum required features are credit inserts and card reading).
+Create an app.json as it's used by APMv3.
+In launch.bat, add following before the game is started:
+
+EXMoney.exe -s <path_to_game>\App\segatools.ini <path_to_game>\app.json http://<path_to_exmoney_server>
+Server URL may be omitted for no server.
+
+Run "EXMoney.exe help" for all flags and features, or see the GMG wiki for APMv3 integration.
