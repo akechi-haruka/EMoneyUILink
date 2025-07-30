@@ -35,6 +35,8 @@ public class ExMoney {
         api.OnAime += ApiOnOnAime;
         api.OnFelica += ApiOnOnFelica;
         api.OnConnectedChange += ApiOnOnConnectedChange;
+        api.Start();
+        api.SendPing();
         new Thread(MainLoopT) {
             Name = "ExMoney Main"
         }.Start();
