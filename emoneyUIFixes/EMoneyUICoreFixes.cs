@@ -1,24 +1,22 @@
-﻿using System.Diagnostics;
-using System.Threading;
+﻿using System;
+using System.Diagnostics;
 using Apm.Emoney.Ui;
 using Apm.Emoney.Ui.GamePad;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using Emoney.SharedMemory;
 using HarmonyLib;
 using Haruka.Arcade.SegAPI;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 using SceneManager = Apm.Emoney.Ui.SceneManager;
 
 namespace Haruka.Arcade.EMUICF {
-    [BepInPlugin("eu.haruka.gmg.apm.eui_fixes", "EMoneyUICoreFixes", "0.2.1")]
+    [BepInPlugin("eu.haruka.gmg.apm.eui_fixes", "EMoneyUICoreFixes", "0.2.2")]
     [BepInProcess("emoneyUI")]
     public class EMoneyUICoreFixes : BaseUnityPlugin {
         public static ConfigEntry<bool> ConfigShrinkHitbox;
-        public static ConfigEntry<int> ConfigDelayStart;
         public static ConfigEntry<bool> ConfigSegatoolsAddGameExitButton;
         public static ConfigEntry<bool> ConfigProcessAddGameExitButton;
         public static ConfigEntry<string> ConfigProcessExitList;
@@ -28,15 +26,14 @@ namespace Haruka.Arcade.EMUICF {
 
         public static ManualLogSource Log;
 
-        internal static SegApi segatools;
+        public static SegApi Api;
 
         public void Awake() {
             Log = Logger;
 
             SegApi.OnLogMessage += SegAPI_OnLogMessage;
 
-            ConfigShrinkHitbox = Config.Bind("General", "Shrink Window Hitbox", true, "Shrinks the (invisible) window hitbox for less risk of touch swallowing if being close to eMoneyUI");
-            ConfigDelayStart = Config.Bind("General", "Startup Delay", 2, "Time delay in seconds until eMoneyUI shows up");
+            ConfigShrinkHitbox = Config.Bind("General", "Shrink Window Hitbox", true, "Shrinks the (invisible) window hitbox for less risk of touch swallowing if being close to eMoneyUI. This can also be passed with the \"-shrink-hitbox\" command line argument, so only some games can be affected.");
             ConfigProcessAddGameExitButton = Config.Bind("Segatools API", "Add Exit Game Button", true, "Adds a button that kills all processes from the process termination list.");
             ConfigProcessExitList = Config.Bind("General", "Process Termination List", "", "Comma-seperated list of processes to terminate.");
 
@@ -48,33 +45,18 @@ namespace Haruka.Arcade.EMUICF {
             Harmony.CreateAndPatchAll(typeof(Patches), "eu.haruka.gmg.apm.fixes.emoneyui.main");
 
             if (ConfigSegatoolsAddGameExitButton.Value) {
-                segatools = new SegApi((byte)ConfigSegatoolsGroupId.Value, (byte)ConfigSegatoolsDeviceId.Value, ConfigSegatoolsBroadcast.Value);
+                Api = new SegApi((byte)ConfigSegatoolsGroupId.Value, (byte)ConfigSegatoolsDeviceId.Value, ConfigSegatoolsBroadcast.Value);
             }
 
             Log.LogInfo("Loaded");
-
-            if (ConfigDelayStart.Value > 0) {
-                Log.LogInfo("Waiting " + ConfigDelayStart.Value + " second(s)...");
-                Thread.Sleep(ConfigDelayStart.Value * 1000);
-            }
         }
 
-        private void SegAPI_OnLogMessage(string obj) {
+        private static void SegAPI_OnLogMessage(string obj) {
             Log.LogDebug(obj);
         }
     }
 
     public class Patches {
-        [HarmonyPostfix, HarmonyPatch(typeof(ShareMemoryAccessor), "Open")]
-        static void Open(ref ShareMemoryAccessor.Result __result) {
-            EMoneyUICoreFixes.Log.LogDebug("Shared memory access: " + __result);
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(ShareMemoryAccessor), "Create")]
-        static void Create(UiSharedData data, ref ShareMemoryAccessor.Result __result) {
-            EMoneyUICoreFixes.Log.LogDebug("Shared memory access: " + __result);
-        }
-
         // crashfix
         [HarmonyPrefix, HarmonyPatch(typeof(ApmInputApi), "IsEqual")]
         static bool IsEqual(ref ApmInputApi.ApmGamepadConfig config1, ref ApmInputApi.ApmGamepadConfig config2, ref bool __result) {
@@ -89,7 +71,7 @@ namespace Haruka.Arcade.EMUICF {
         // Reduce hitbox of UI in minimized state
         [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "Start")]
         static bool Start(SceneManager __instance) {
-            if (EMoneyUICoreFixes.ConfigShrinkHitbox.Value) {
+            if (EMoneyUICoreFixes.ConfigShrinkHitbox.Value || Environment.CommandLine.Contains("-shrink-hitbox")) {
                 /*EMUICF.Log.LogDebug("Menu rect: X=" + __instance.entryMenuRect.x + ",Y=" + __instance.entryMenuRect.y);*/
                 EMoneyUICoreFixes.Log.LogDebug("Menu size: X=" + __instance.entryMenuSize.x + ",Y=" + __instance.entryMenuSize.y);
                 EMoneyUICoreFixes.Log.LogDebug("Icon alignment: " + __instance.iconAxis);
@@ -113,11 +95,11 @@ namespace Haruka.Arcade.EMUICF {
         static void ChangeState(EmoneyMenu __instance, EmoneyMenu.State next) {
             if (next == EmoneyMenu.State.Item) {
                 if (EMoneyUICoreFixes.ConfigSegatoolsAddGameExitButton.Value || EMoneyUICoreFixes.ConfigProcessAddGameExitButton.Value) {
-                    GameObject exitButton = Object.Instantiate<GameObject>(__instance.buttonPrefab, __instance.itemButtons.transform);
+                    GameObject exitButton = Object.Instantiate(__instance.buttonPrefab, __instance.itemButtons.transform);
                     exitButton.GetComponent<Button>().interactable = true;
 
                     ItemButton ib = exitButton.GetComponent<ItemButton>();
-                    ib.Click.AddListener(new UnityAction<int>(SegatoolsSendExitGame));
+                    ib.Click.AddListener(SegatoolsSendExitGame);
                     ib.Price = 0;
                     ib.ItemName = "EXIT GAME";
                     ib.Controller = __instance.emoneyController.GetComponent<EmoneyController>();
@@ -140,8 +122,8 @@ namespace Haruka.Arcade.EMUICF {
         }
 
         private static void SegatoolsSendExitGame(int _) {
-            if (EMoneyUICoreFixes.segatools != null) {
-                EMoneyUICoreFixes.segatools.SendExitGame();
+            if (EMoneyUICoreFixes.Api != null) {
+                EMoneyUICoreFixes.Api.SendExitGame();
             }
 
             if (EMoneyUICoreFixes.ConfigProcessAddGameExitButton.Value) {

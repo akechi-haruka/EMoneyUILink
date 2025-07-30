@@ -1,70 +1,59 @@
-﻿using am.abaas;
-using AMDaemon;
-using Apm.System.Setting.Volatile;
-using Apm.System.UnityUtil;
-using Apm.System.Warning;
-using HarmonyLib;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using AMDaemon;
 using Apm.System.AbaasLink;
+using Apm.System.Setting.Volatile;
+using Apm.System.UnityUtil;
 using Apm.System.Util.Log;
+using Apm.System.Warning;
+using HarmonyLib;
 using static Apm.System.Daemon.Input;
 using static Apm.System.Error.ErrorResource;
 using SceneManager = Apm.System.GameIconList.SceneManager;
 
 namespace APMCoreFixes {
     internal class MiscPatches {
-
         // Skip warning screen
         [HarmonyPrefix, HarmonyPatch(typeof(Warning), "StartAnimation")]
         static bool StartAnimation(AnimationController.AnimationEnd onEnd) {
-            if (APMCF.ConfigSkipWarning.Value) {
+            if (ApmCoreFixes.ConfigSkipWarning.Value) {
                 onEnd();
                 return false;
-            } else {
-                return true;
             }
-        }
 
-        // Fake matching server online
-        [HarmonyPrefix, HarmonyPatch(typeof(Link), "IsAvailable")]
-        static bool IsAvailable(ref bool __result) {
-            if (APMCF.ConfigFakeABaaSLinkOnline.Value) {
-                __result = true;
-                return false;
-            } else {
-                return true;
-            }
+            return true;
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "GameStart")]
         public static bool GameStart(string subGameId, string version, AppAdditionalInfo info, SceneManager __instance) {
-            if (!APMCF.ConfigUseBatchLaunchSystem.Value) {
+            if (!ApmCoreFixes.ConfigUseBatchLaunchSystem.Value) {
                 return true;
             }
-            APMCF.Log.LogInfo("Launching " + subGameId + "...");
+
+            ApmCoreFixes.Log.LogInfo("Launching " + subGameId + "...");
             AppInfo game = AppListManager.GetInstance().Info.List.Find(p => p.subGameId == subGameId);
             if (game == null) {
-                APMCF.Log.LogError("No such game entry: " + subGameId);
+                ApmCoreFixes.Log.LogError("No such game entry: " + subGameId);
                 Error.Set((int)ErrorNumber.ApmUnexpectedGameProgramFailure);
                 return false;
             }
+
             string game_path = Path.GetDirectoryName(game.paths.images.Original);
-            APMCF.Log.LogInfo("Directory is: " + game_path);
+            ApmCoreFixes.Log.LogInfo("Directory is: " + game_path);
             if (game_path.StartsWith("C:\\Mount\\Option")) {
-                game_path = game_path.Replace("C:\\Mount\\Option", APMCF.ConfigOptionDirectory.Value);
-                APMCF.Log.LogInfo("Optionified directory is: " + game_path);
+                game_path = game_path.Replace("C:\\Mount\\Option", ApmCoreFixes.ConfigOptionDirectory.Value);
+                ApmCoreFixes.Log.LogInfo("Optionified directory is: " + game_path);
             }
 
             if (!File.Exists(Path.Combine(game_path, "game.bat"))) {
-                APMCF.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
+                ApmCoreFixes.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
                 return true;
             }
-            
+
             Thread.Sleep(1000); // let sound effect finish
-            
+
             try {
                 Process p = Process.Start(new ProcessStartInfo("subst.exe", "W: " + game_path) {
                     CreateNoWindow = true,
@@ -81,20 +70,20 @@ namespace APMCoreFixes {
                     throw new Exception("Return code of subst is " + p.ExitCode);
                 }
             } catch (Exception ex) {
-                APMCF.Log.LogError("Failed to set virtual drive: " + ex);
+                ApmCoreFixes.Log.LogError("Failed to set virtual drive: " + ex);
                 Error.Set((int)ErrorNumber.CommonUnexpectedGameProgramFailure);
                 return false;
             }
-            
+
             __instance.isStartingGame = true;
             __instance.launchSubGameId = subGameId;
             __instance.launchVersion = version;
-            if (!__instance.bootApplication)
-            {
+            if (!__instance.bootApplication) {
                 __instance.isMountEnd = true;
                 __instance.isStartGameEnd = true;
                 return false;
             }
+
             SystemConfigManager.GetInstance().Info.EMoney = info.EMoney;
             SystemConfigManager.GetInstance().Info.Ui = info.Ui;
             SystemConfigManager.GetInstance().Info.GamePad = info.GamePad;
@@ -106,11 +95,11 @@ namespace APMCoreFixes {
         }
 
         private static void P_OutputDataReceived(object sender, DataReceivedEventArgs e) {
-            APMCF.Log.LogInfo("External: " + e.Data);
+            ApmCoreFixes.Log.LogInfo("External: " + e.Data);
         }
 
         private static void P_ErrorDataReceived(object sender, DataReceivedEventArgs e) {
-            APMCF.Log.LogError("External: " + e.Data);
+            ApmCoreFixes.Log.LogError("External: " + e.Data);
         }
 
         [HarmonyPrefix, HarmonyPatch(typeof(Apm.System.Warning.SceneManager), "OnStartGameEnd")]
@@ -118,8 +107,9 @@ namespace APMCoreFixes {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                APMCF.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful");
             }
+
             return false;
         }
 
@@ -128,18 +118,20 @@ namespace APMCoreFixes {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                APMCF.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful");
             }
+
             return false;
         }
 
-        [HarmonyPrefix, HarmonyPatch(typeof(Apm.System.GameIconList.SceneManager), "OnStartGameEnd")]
-        static bool OnStartGameEnd(Apm.System.GameIconList.SceneManager __instance, bool isSucceeded) {
+        [HarmonyPrefix, HarmonyPatch(typeof(SceneManager), "OnStartGameEnd")]
+        static bool OnStartGameEnd(SceneManager __instance, bool isSucceeded) {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                APMCF.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful");
             }
+
             return false;
         }
 
@@ -151,33 +143,35 @@ namespace APMCoreFixes {
 
         [HarmonyPrefix, HarmonyPatch(typeof(InputSystem), "Update")]
         static bool Update(InputSystem __instance) {
-            if (APMCF.ConfigAMDAnalogInsteadOfButtons.Value) {
+            if (ApmCoreFixes.ConfigAMDAnalogInsteadOfButtons.Value) {
                 if (__instance.sw == InputSwitch.up || __instance.sw == InputSwitch.right || __instance.sw == InputSwitch.down || __instance.sw == InputSwitch.left) {
                     UpdateAnalog(__instance);
                     return false;
                 }
             }
+
             return true;
         }
 
-        private static double map(double x, double in_min, double in_max, double out_min, double out_max) {
+        private static double Map(double x, double in_min, double in_max, double out_min, double out_max) {
             return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
         }
 
         private static void UpdateAnalog(InputSystem input) {
             InputUnit unit = Input.Players[0];
 
-            double deadzone = APMCF.ConfigIO4StickDeadzone.Value / 100F;
-            var ax = unit.GetAnalog(APMCF.AnalogX).Value;
-            var ay = unit.GetAnalog(APMCF.AnalogY).Value;
-            double x = map(ax, 0, 1, -1, 1);
-            double y = map(ay, 0, 1, -1, 1);
+            double deadzone = ApmCoreFixes.ConfigIO4StickDeadzone.Value / 100F;
+            var ax = unit.GetAnalog(ApmCoreFixes.AnalogX).Value;
+            var ay = unit.GetAnalog(ApmCoreFixes.AnalogY).Value;
+            double x = Map(ax, 0, 1, -1, 1);
+            double y = Map(ay, 0, 1, -1, 1);
             //APMCF.Log.LogDebug(ax + "/" + ay);
 
-            if (APMCF.ConfigIO4AxisXInvert.Value) {
+            if (ApmCoreFixes.ConfigIO4AxisXInvert.Value) {
                 x = -x;
             }
-            if (APMCF.ConfigIO4AxisYInvert.Value) {
+
+            if (ApmCoreFixes.ConfigIO4AxisYInvert.Value) {
                 y = -y;
             }
 
@@ -207,12 +201,12 @@ namespace APMCoreFixes {
         static void Initialize(Main __instance) {
             __instance.abaasLink.SetDebugLevel(99);
             __instance.abaasLink.SetDebugOutputFunc(debugfunc);
-            APMCF.Log.LogInfo("Installed AbaasLink debugging");
-            APMCF.Log.LogInfo("Server URI: " + __instance.daemonMain.AllNet.AbaasLinkServerName);
+            ApmCoreFixes.Log.LogInfo("Installed AbaasLink debugging");
+            ApmCoreFixes.Log.LogInfo("Server URI: " + __instance.daemonMain.AllNet.AbaasLinkServerName);
         }
 
         private static void debugfunc(string message) {
-            APMCF.Log.LogInfo("AbaasLink: " + message);
+            ApmCoreFixes.Log.LogInfo("AbaasLink: " + message);
         }
     }
 }

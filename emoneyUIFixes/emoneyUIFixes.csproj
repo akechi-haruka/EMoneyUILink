@@ -73,10 +73,4 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy /Y $(TargetPath) L:\SDVX\apm3\bepinex\plugins\$(TargetName).dll
-copy /Y $(TargetPath) L:\SDVX\apm3_amd\bepinex\plugins\$(TargetName).dll
-copy /Y $(TargetPath) T:\apm\bepinex\plugins\$(TargetName).dll
-exit 0</PostBuildEvent>
-  </PropertyGroup>
 </Project>

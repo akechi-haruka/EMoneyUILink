@@ -6,12 +6,11 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace APMCoreFixes {
     [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.2")]
     [BepInProcess("Apmv3System")]
-    public class APMCF : BaseUnityPlugin {
+    public class ApmCoreFixes : BaseUnityPlugin {
         private const string CAT_HOME_USE = "Home Use";
         private const string CAT_INPUT = "Input";
         private const string CAT_NETWORK = "Network";
@@ -20,9 +19,6 @@ namespace APMCoreFixes {
         public static InputId AnalogX { get; private set; }
         public static InputId AnalogY { get; private set; }
 
-        public static ConfigEntry<bool> ConfigUnencryptedABaaSGs;
-        public static ConfigEntry<bool> ConfigFakeABaaSLinkOnline;
-        public static ConfigEntry<bool> ConfigSkipVHDMount;
         public static ConfigEntry<bool> ConfigDisableOPTPresenceCheck;
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
@@ -43,9 +39,6 @@ namespace APMCoreFixes {
         public void Awake() {
             Log = Logger;
 
-            ConfigUnencryptedABaaSGs = Config.Bind(CAT_NETWORK, "Unencrypted ABaaSGs Communication", false, "Disabled ABaaSGs encryption and compression");
-            ConfigFakeABaaSLinkOnline = Config.Bind(CAT_NETWORK, "Fake ABaaSLink Online", true, "Simulates the matching server being online. Serves no purpose except getting a green online indicator.");
-            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", false, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes() { IsAdvanced = true }));
             ConfigDisableOPTPresenceCheck = Config.Bind(CAT_HOME_USE, "Disable .opt Presence Check", true, "Disables the required existence of (any) .opt files in game directories.");
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
@@ -63,7 +56,6 @@ namespace APMCoreFixes {
             Harmony.CreateAndPatchAll(typeof(ABaaSGsPatches), "eu.haruka.gmg.apm.fixes.abaasgs");
             Harmony.CreateAndPatchAll(typeof(APMDebugPatches), "eu.haruka.gmg.apm.fixes.debug");
             Harmony.CreateAndPatchAll(typeof(MiscPatches), "eu.haruka.gmg.apm.fixes.misc");
-            Harmony.CreateAndPatchAll(typeof(AppMounterPatches), "eu.haruka.gmg.apm.fixes.vhd");
         }
 
         public void Update() {
