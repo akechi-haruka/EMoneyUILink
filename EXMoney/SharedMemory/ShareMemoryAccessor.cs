@@ -37,6 +37,10 @@ namespace Haruka.Arcade.EXMoney.SharedMemory {
             set { Write(value, EditRequestOpen); }
         }
 
+        public bool RequestExit {
+            set { Write(value, EditRequestExit); }
+        }
+
         public bool Boot {
             set { Write(value, EditUiBoot); }
         }
@@ -223,6 +227,11 @@ namespace Haruka.Arcade.EXMoney.SharedMemory {
 
         private UiSharedData EditUiShowGamePadWindow(UiSharedData current, bool value) {
             current.Condition.DisplayingGamePad = value;
+            return current;
+        }
+
+        private UiSharedData EditRequestExit(UiSharedData current, bool value) {
+            current.Request.CloseUi = true;
             return current;
         }
 

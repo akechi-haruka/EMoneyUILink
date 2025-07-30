@@ -3,56 +3,60 @@ using JetBrains.Annotations;
 
 namespace Haruka.Arcade.EXMoney {
     public class Options {
-        [Option("delay", Required = false, HelpText = "Waits with launching E-Money UI for the given seconds")]
+        [Option("delay", Required = false, HelpText = "Waits with launching E-Money UI for the given seconds.")]
         [UsedImplicitly]
-        public int UIDelay { get; }
+        public int UIDelay { get; set; }
 
-        [Option('v', Required = false, HelpText = "Port to the VFD (unused if unset)")]
+        [Option('v', Required = false, HelpText = "Port to the VFD (unused if unset).")]
         [UsedImplicitly]
-        public int VfdPort { get; }
+        public int VfdPort { get; set; }
 
-        [Option("exe", Required = false, HelpText = "Path to emoneyUI.exe", Default = "X:\\emoneyUI.exe")]
+        [Option("exe", Required = false, HelpText = "Path to emoneyUI.exe.", Default = "X:\\emoneyUI.exe")]
         [UsedImplicitly]
-        public string EMoneyExecutable { get; }
+        public string EMoneyExecutable { get; set; }
 
-        [Option("item-name", Required = false, HelpText = "Item name used for transactions")]
+        [Option("exe-args", Required = false, HelpText = "Arguments passed to emoneyUI.exe. Has no effect without mods.")]
         [UsedImplicitly]
-        public string ItemName { get; }
+        public string EMoneyArgs { get; set; }
 
-        [Option('g', Required = false, HelpText = "SegAPI group ID")]
+        [Option("item-name", Required = false, HelpText = "Item name used for transactions.")]
         [UsedImplicitly]
-        public int GroupId { get; }
+        public string ItemName { get; set; }
 
-        [Option('d', Required = false, HelpText = "SegAPI device ID")]
+        [Option('g', Required = false, HelpText = "SegAPI group ID.")]
         [UsedImplicitly]
-        public int DeviceId { get; }
+        public int GroupId { get; set; }
 
-        [Option('p', Required = false, HelpText = "SegAPI port", Default = 5364)]
+        [Option('d', Required = false, HelpText = "SegAPI device ID.")]
         [UsedImplicitly]
-        public int ApiPort { get; }
+        public int DeviceId { get; set; }
 
-        [Option('b', Required = false, HelpText = "SegAPI broadcast address", Default = "255.255.255.255")]
+        [Option('p', Required = false, HelpText = "SegAPI port.", Default = 5364)]
         [UsedImplicitly]
-        public string ApiBroadcast { get; }
+        public int ApiPort { get; set; }
 
-        [Option('k', Required = false, HelpText = "Keychip ID")]
+        [Option('b', Required = false, HelpText = "SegAPI broadcast address.", Default = "255.255.255.255")]
         [UsedImplicitly]
-        public string KeychipId { get; }
+        public string ApiBroadcast { get; set; }
 
-        [Option('s', Required = false, HelpText = "Path to segatools.ini")]
+        [Option('k', Required = false, HelpText = "Keychip ID sent to the payment server.")]
         [UsedImplicitly]
-        public string SegatoolsIniPath { get; }
+        public string KeychipId { get; set; }
 
-        [Option("silent", Required = false, HelpText = "Disable console output")]
+        [Option('s', Required = false, HelpText = "Path to segatools.ini.")]
         [UsedImplicitly]
-        public bool Silent { get; }
+        public string SegatoolsIniPath { get; set; }
 
-        [Value(0, MetaName = "AppConfig", Required = true, HelpText = "The app.json file of the played game")]
+        [Option("silent", Required = false, HelpText = "Disable console output.")]
         [UsedImplicitly]
-        public string AppConfig { get; }
+        public bool Silent { get; set; }
 
-        [Value(1, MetaName = "Server", Required = false, HelpText = "EXMoney/OpenMoney server address. If not specified no server will be used; infinite money will be available")]
+        [Value(0, MetaName = "AppConfig", Required = true, HelpText = "The app.json file of the played game.")]
         [UsedImplicitly]
-        public string Server { get; }
+        public string AppConfig { get; set; }
+
+        [Value(1, MetaName = "Server", Required = false, HelpText = "EXMoney/OpenMoney server address. If not specified no server will be used; infinite money will be available.")]
+        [UsedImplicitly]
+        public string Server { get; set; }
     }
 }

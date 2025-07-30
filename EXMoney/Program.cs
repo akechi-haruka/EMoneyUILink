@@ -24,6 +24,8 @@ class Program {
     public static IConfigurationRoot Config;
     public static MoneyBrand[] Brands;
 
+    private static bool IsTerminating;
+
     static Program() {
         string gitHash = Assembly.Load(typeof(Program).Assembly.FullName)
             .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -47,8 +49,6 @@ class Program {
             }
 
             return Int32.MinValue;
-        } finally {
-            Logging.Main?.LogInformation("Exiting");
         }
     }
 
@@ -151,15 +151,29 @@ class Program {
             Thread.Sleep(options.UIDelay * 1000);
         }
 
-        Logging.Main.LogDebug("Launching emoneyUI...");
+        Logging.Main.LogDebug("Launching emoneyUI (args: {a})...", options.EMoneyArgs);
         Process.Start(new ProcessStartInfo(options.EMoneyExecutable) {
-            UseShellExecute = true
+            UseShellExecute = true,
+            Arguments = options.EMoneyArgs
         });
+
+        Console.CancelKeyPress += ConsoleOnCancelKeyPress;
 
         ExMoney exmoney = new ExMoney(SegApi, Vfd, Brands, Memory, AppConfig, options);
         exmoney.Start();
 
         return 0;
+    }
+
+    private static void ConsoleOnCancelKeyPress(object sender, ConsoleCancelEventArgs e) {
+        Logging.Main.LogInformation("Cancel key pressed!");
+        if (!IsTerminating) {
+            Memory.RequestExit = true;
+            e.Cancel = true;
+            IsTerminating = true;
+        } else {
+            Logging.Main.LogWarning("Force terminating!");
+        }
     }
 
     private static void InitializeMemory(ShareMemoryAccessor mem) {
@@ -213,6 +227,9 @@ class Program {
         data.GamePad.Enable = AppConfig.gamepad.enable;
         data.GamePad.MergeInput = AppConfig.gamepad.merge;
         data.GamePad.Sw = new ushort[8];
+
+        mem.Data = data;
+        mem.Update();
     }
 
     private static void LogOnLogMessageWritten(LogEntry obj) {

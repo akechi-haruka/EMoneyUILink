@@ -127,7 +127,7 @@ public class ExMoney {
                 data.Request.RequestDone = true;
             }
 
-            if (data.Request.CloseUi) {
+            if (data.Condition.Closed) {
                 break;
             }
 
