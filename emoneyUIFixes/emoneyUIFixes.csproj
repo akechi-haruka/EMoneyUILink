@@ -7,7 +7,7 @@
     <ProjectGuid>{7C856E5E-3CF1-49CA-B345-44DDE36D0414}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>emoneyUIFixes</RootNamespace>
+      <RootNamespace>Haruka.Arcade.EMUICF</RootNamespace>
     <AssemblyName>emoneyUIFixes</AssemblyName>
     <TargetFrameworkVersion>4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -63,13 +63,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EMUICF.cs" />
+      <Compile Include="EMoneyUICoreFixes.cs"/>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SegatoolsAPI\SegatoolsAPI.csproj">
-      <Project>{52bd5e76-26a6-40b0-8019-95a0855bfb20}</Project>
-      <Name>SegatoolsAPI</Name>
+      <ProjectReference Include="..\..\SegApiCS\SegApiCS\SegApiCS.csproj">
+          <Project>{093885e5-3c56-41e3-9065-fd340bced55b}</Project>
+          <Name>SegApiCS</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

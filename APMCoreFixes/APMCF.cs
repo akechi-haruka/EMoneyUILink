@@ -1,31 +1,20 @@
-﻿using am.abaas;
+﻿using System;
 using AMDaemon;
-using Apm.System.Setting.NonVolatile;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
-using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace APMCoreFixes {
-
     [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.2")]
     [BepInProcess("Apmv3System")]
     public class APMCF : BaseUnityPlugin {
-
-        private const String CAT_HOME_USE = "Home Use";
-        private const String CAT_INPUT = "Input";
-        private const String CAT_NETWORK = "Network";
+        private const string CAT_HOME_USE = "Home Use";
+        private const string CAT_INPUT = "Input";
+        private const string CAT_NETWORK = "Network";
 
         public static ManualLogSource Log;
         public static InputId AnalogX { get; private set; }
@@ -38,7 +27,7 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
-        public static ConfigEntry<String> ConfigOptionDirectory;
+        public static ConfigEntry<string> ConfigOptionDirectory;
         public static ConfigEntry<bool> ConfigShowMouse;
         public static ConfigEntry<bool> ConfigShowClock;
         public static ConfigEntry<bool> ConfigAddXFolders;
@@ -56,7 +45,7 @@ namespace APMCoreFixes {
 
             ConfigUnencryptedABaaSGs = Config.Bind(CAT_NETWORK, "Unencrypted ABaaSGs Communication", false, "Disabled ABaaSGs encryption and compression");
             ConfigFakeABaaSLinkOnline = Config.Bind(CAT_NETWORK, "Fake ABaaSLink Online", true, "Simulates the matching server being online. Serves no purpose except getting a green online indicator.");
-            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", false, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
+            ConfigSkipVHDMount = Config.Bind(CAT_HOME_USE, "No VHD Mounting", false, new ConfigDescription("Disables VHD mounting/unmounting. Use only if not using segatools mounthook.", null, new ConfigurationManagerAttributes() { IsAdvanced = true }));
             ConfigDisableOPTPresenceCheck = Config.Bind(CAT_HOME_USE, "Disable .opt Presence Check", true, "Disables the required existence of (any) .opt files in game directories.");
             ConfigDisableNameChecks = Config.Bind(CAT_HOME_USE, "Disable Game Name Checking", true, "Disables various checks related to game names and game IDs for files and folders.");
             ConfigSkipWarning = Config.Bind(CAT_HOME_USE, "Skip Japan Warning", false, "Skips the \"only use in Japan\" warning.");
@@ -64,7 +53,7 @@ namespace APMCoreFixes {
             ConfigOptionDirectory = Config.Bind(CAT_HOME_USE, "Option directory", "option", new ConfigDescription("If root .bat launchers are enabled, set the option directory here (same as in segatools.ini, may be absolute or relative). See readme for more information."));
             ConfigShowMouse = Config.Bind(CAT_HOME_USE, "Show Mouse", false, "Shows the mouse cursor.");
             ConfigShowClock = Config.Bind(CAT_HOME_USE, "Show Clock", true, "Shows a clock on the game selection screen.");
-            ConfigAddXFolders = Config.Bind(CAT_NETWORK, "Add X-APMCF-Folders Field", true, new ConfigDescription("Adds all existing folders to an extra field in network communication when fetching game list.", null, new ConfigurationManagerAttributes(){IsAdvanced = true}));
+            ConfigAddXFolders = Config.Bind(CAT_NETWORK, "Add X-APMCF-Folders Field", true, new ConfigDescription("Adds all existing folders to an extra field in network communication when fetching game list.", null, new ConfigurationManagerAttributes() { IsAdvanced = true }));
 
             ConfigAMDAnalogInsteadOfButtons = Config.Bind(CAT_INPUT, "Use Analog instead of buttons", false, "Use analog for navigation instead of 4 buttons (Requires config_hook.json, see readme)");
             ConfigIO4StickDeadzone = Config.Bind(CAT_INPUT, "Stick Deadzone", 30, "The stick deadzone in percent");
@@ -75,11 +64,10 @@ namespace APMCoreFixes {
             Harmony.CreateAndPatchAll(typeof(APMDebugPatches), "eu.haruka.gmg.apm.fixes.debug");
             Harmony.CreateAndPatchAll(typeof(MiscPatches), "eu.haruka.gmg.apm.fixes.misc");
             Harmony.CreateAndPatchAll(typeof(AppMounterPatches), "eu.haruka.gmg.apm.fixes.vhd");
-            
         }
 
         public void Update() {
-            if (AnalogX == null && AMDaemon.Core.IsReady) {
+            if (AnalogX == null && Core.IsReady) {
                 AnalogX = new InputId("analog_x");
                 AnalogY = new InputId("analog_y");
                 Log.LogInfo("Analog initialized");
@@ -97,7 +85,7 @@ namespace APMCoreFixes {
                     if (clock == null || !clock.activeInHierarchy) {
                         GameObject text = GameObject.Find("MainCanvas/HeaderCanvas/CoopGroup");
                         if (text != null) {
-                            clock = UnityEngine.Object.Instantiate(text, text.transform.parent);
+                            clock = Instantiate(text, text.transform.parent);
                             clock.transform.position += new Vector3(0, -30);
                             clock.SetActive(true);
                         }
@@ -111,8 +99,6 @@ namespace APMCoreFixes {
                     }
                 }
             }
-
         }
-        
     }
 }

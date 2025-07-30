@@ -7,7 +7,7 @@
     <ProjectGuid>{C91294FD-329F-42D3-A4C2-FDDD3721AB75}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>APMHeadbananaLink</RootNamespace>
+      <RootNamespace>Haruka.Arcade.APMHeadbanana</RootNamespace>
     <AssemblyName>APMHeadbananaLink</AssemblyName>
     <TargetFrameworkVersion>4.8.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

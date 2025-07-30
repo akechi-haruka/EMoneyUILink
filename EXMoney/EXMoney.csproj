@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <RootNamespace>Haruka.Arcade.EXMoney</RootNamespace>
+        <AssemblyVersion>0.1</AssemblyVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommandLineParser" Version="2.9.1"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.7"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.7"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="NReco.Logging.File" Version="1.2.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\SEGA835Lib\SEGA835Lib\SEGA835Lib.csproj"/>
+        <ProjectReference Include="..\..\SegApiCS\SegApiCS\SegApiCS.csproj"/>
+    </ItemGroup>
+
+    <Target Name="SetHash" AfterTargets="InitializeSourceControlInformation">
+
+        <Exec Command="git.exe describe --always --dirty --exclude='*' --abbrev=8" ConsoleToMSBuild="True" IgnoreExitCode="False">
+            <Output PropertyName="Revision" TaskParameter="ConsoleOutput"/>
+        </Exec>
+
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+                <_Parameter1>GitHash</_Parameter1>
+                <_Parameter2>$(Revision)</_Parameter2>
+            </AssemblyAttribute>
+        </ItemGroup>
+
+    </Target>
+
+</Project>
