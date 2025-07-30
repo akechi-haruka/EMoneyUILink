@@ -43,6 +43,10 @@ public class ExMoney {
     }
 
     private void ApiOnOnConnectedChange(bool obj) {
+        if (!alive && obj) {
+            SetVfdIdleText();
+        }
+
         alive = obj;
         LOG.LogInformation("Connection status has changed to {r}", obj);
     }

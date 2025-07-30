@@ -212,7 +212,7 @@ class Program {
             brands.Add(mb);
         }
 
-        data.Daemon.DisplayBrandCounts = (uint)data.Daemon.DisplayBrands.Length;
+        data.Daemon.DisplayBrandCounts = (uint)count;
         Brands = brands.ToArray();
 
         data.Item.Items = new Item[5];
