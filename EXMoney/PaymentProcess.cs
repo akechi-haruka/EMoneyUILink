@@ -42,7 +42,6 @@ namespace Haruka.Arcade.EXMoney {
         public bool PlaySound { get; set; }
         public EMoneyResultStatus Status { get; private set; } = EMoneyResultStatus.Fail;
 
-        private DateTime lastOperationFinish = DateTime.Now;
         private Thread executor;
         private VFD_GP1232A02A vfd;
         private SegApi api;
@@ -63,9 +62,6 @@ namespace Haruka.Arcade.EXMoney {
             Status = status;
             Result = result;
             Busy = false;
-            if (!isError) {
-                lastOperationFinish = DateTime.Now;
-            }
 
             api.SendCardReaderState(false);
             api.SendCardReaderLed(0, 0, 0);
@@ -81,10 +77,6 @@ namespace Haruka.Arcade.EXMoney {
         }
 
         public void RequestBalance(uint brandId) {
-            if (CheckTooFastRequest()) {
-                return;
-            }
-
             IsError = false;
             Busy = true;
             IsCancellable = true;
@@ -94,10 +86,6 @@ namespace Haruka.Arcade.EXMoney {
         }
 
         public void PayToCoin(uint brandId, string itemName, uint coin) {
-            if (CheckTooFastRequest()) {
-                return;
-            }
-
             IsError = false;
             Busy = true;
             IsCancellable = true;
@@ -107,23 +95,11 @@ namespace Haruka.Arcade.EXMoney {
         }
 
         public void PayAmount(uint brandId, string itemId, int amount, uint count) {
-            if (CheckTooFastRequest()) {
-                return;
-            }
-
             Busy = true;
             IsCancellable = true;
             Result = null;
             executor = new Thread(() => PaymentRequestT(brandId, amount, (int)count, PaymentRequestType.PayAmount, itemId, (amountPaid, remaining) => OnPayAmountSuccess(amountPaid, remaining, count)));
             executor.Start();
-        }
-
-        private bool CheckTooFastRequest() {
-            if (DateTime.Now - lastOperationFinish < TimeSpan.FromSeconds(1)) {
-                return true;
-            }
-
-            return false;
         }
 
         private void PaymentRequestT(uint brandId, int amount, int count, PaymentRequestType requestType, string itemName, EMoneySuccessCallback onSucess) {

@@ -194,6 +194,7 @@ class Program {
             MoneyBrand mb = new MoneyBrand(
                 value.GetValue<uint>("Id"),
                 value.GetValue<string>("Name"),
+                value.GetValue<string>("Icon"),
                 value.GetValue<string>("SoundStart"),
                 value.GetValue<string>("SoundSuccess"),
                 value.GetValue<string>("SoundError"),
@@ -202,7 +203,7 @@ class Program {
             );
             Brand b = new Brand() {
                 Id = mb.ID,
-                Filename = mb.SoundOnSuccess,
+                Filename = mb.Icon,
                 EnableBalance = mb.HasBalance
             };
             if (AppConfig.emoney.paseli || !mb.IsPaseli) {

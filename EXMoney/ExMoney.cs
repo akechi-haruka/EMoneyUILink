@@ -32,8 +32,6 @@ public class ExMoney {
 
     public void Start() {
         api.OnCardReaderBlocking += ApiOnOnCardReaderBlocking;
-        api.OnAime += ApiOnOnAime;
-        api.OnFelica += ApiOnOnFelica;
         api.OnConnectedChange += ApiOnOnConnectedChange;
         api.Start();
         api.SendPing();
@@ -49,14 +47,6 @@ public class ExMoney {
 
         alive = obj;
         LOG.LogInformation("Connection status has changed to {r}", obj);
-    }
-
-    private void ApiOnOnFelica(byte[] obj) {
-        throw new NotImplementedException();
-    }
-
-    private void ApiOnOnAime(byte[] obj) {
-        throw new NotImplementedException();
     }
 
     private void ApiOnOnCardReaderBlocking(bool b) {
