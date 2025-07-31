@@ -60,6 +60,10 @@ public class ExMoney {
                 SetVfdIdleText();
             }
 
+            if (b) {
+                payment?.Cancel();
+            }
+
             vfd?.SetTextDrawing(true);
         }
     }
