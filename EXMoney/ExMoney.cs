@@ -84,7 +84,7 @@ public class ExMoney {
                 data.Request.Cancel = false;
                 data.Request.RequestDone = true;
             } else if (data.Request.RequestBalance) {
-                payment = new PaymentProcess(this, vfd, api);
+                payment = new PaymentProcess(this, vfd, api, brands);
                 payment.RequestBalance(data.Request.BrandId);
                 data.Request.RequestBalance = false;
 
@@ -94,7 +94,7 @@ public class ExMoney {
                     data.Request.SoundData.Filename = sound;
                 }
             } else if (data.Request.RequestPayToCoin) {
-                payment = new PaymentProcess(this, vfd, api);
+                payment = new PaymentProcess(this, vfd, api, brands);
                 payment.PayToCoin(data.Request.BrandId, options.ItemName ?? data.Request.Price.ToString(), data.Request.Price / 100);
                 data.Request.RequestPayToCoin = false;
 

@@ -26,7 +26,7 @@ namespace APMCoreFixes {
 
         [HarmonyPostfix, HarmonyPatch(typeof(Analyzer), "GetInfo")]
         public static void GetInfo(ref Analyzer.ImageInfo __result, string path) {
-            if (!ApmCoreFixes.ConfigDisableOPTPresenceCheck.Value) {
+            if (!ApmCoreFixes.ConfigDisableOptPresenceCheck.Value) {
                 return;
             }
 

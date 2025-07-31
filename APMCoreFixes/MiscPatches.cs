@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using AMDaemon;
-using Apm.System.AbaasLink;
+using Apm.System.AbaasGs;
 using Apm.System.Setting.Volatile;
 using Apm.System.UnityUtil;
 using Apm.System.Util.Log;
@@ -42,10 +42,6 @@ namespace APMCoreFixes {
 
             string game_path = Path.GetDirectoryName(game.paths.images.Original);
             ApmCoreFixes.Log.LogInfo("Directory is: " + game_path);
-            if (game_path.StartsWith("C:\\Mount\\Option")) {
-                game_path = game_path.Replace("C:\\Mount\\Option", ApmCoreFixes.ConfigOptionDirectory.Value);
-                ApmCoreFixes.Log.LogInfo("Optionified directory is: " + game_path);
-            }
 
             if (!File.Exists(Path.Combine(game_path, "game.bat"))) {
                 ApmCoreFixes.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
@@ -54,6 +50,7 @@ namespace APMCoreFixes {
 
             Thread.Sleep(1000); // let sound effect finish
 
+            ApmCoreFixes.Log.LogDebug("Setting virtual drive");
             try {
                 Process p = Process.Start(new ProcessStartInfo("subst.exe", "W: " + game_path) {
                     CreateNoWindow = true,
@@ -75,6 +72,8 @@ namespace APMCoreFixes {
                 return false;
             }
 
+            ApmCoreFixes.Log.LogDebug("Virtual drive set");
+
             __instance.isStartingGame = true;
             __instance.launchSubGameId = subGameId;
             __instance.launchVersion = version;
@@ -88,9 +87,13 @@ namespace APMCoreFixes {
             SystemConfigManager.GetInstance().Info.Ui = info.Ui;
             SystemConfigManager.GetInstance().Info.GamePad = info.GamePad;
             PlayLogSender.Save("Launch " + subGameId + " Ver." + version);
-            __instance.abaasGsController.GetComponent<Apm.System.AbaasGs.Main>().Cancel();
+            ApmCoreFixes.Log.LogDebug("Cancel Network");
+            __instance.abaasGsController.GetComponent<Main>().Cancel();
+            ApmCoreFixes.Log.LogDebug("Start game to AMDaemon");
             __instance.daemonMain.StartGame(subGameId, __instance.OnStartGameEnd);
+            ApmCoreFixes.Log.LogDebug("OnMountEnd");
             __instance.OnMountEnd(true);
+            ApmCoreFixes.Log.LogDebug("OK");
             return false;
         }
 
@@ -143,7 +146,7 @@ namespace APMCoreFixes {
 
         [HarmonyPrefix, HarmonyPatch(typeof(InputSystem), "Update")]
         static bool Update(InputSystem __instance) {
-            if (ApmCoreFixes.ConfigAMDAnalogInsteadOfButtons.Value) {
+            if (ApmCoreFixes.ConfigAmdAnalogInsteadOfButtons.Value) {
                 if (__instance.sw == InputSwitch.up || __instance.sw == InputSwitch.right || __instance.sw == InputSwitch.down || __instance.sw == InputSwitch.left) {
                     UpdateAnalog(__instance);
                     return false;
@@ -195,18 +198,6 @@ namespace APMCoreFixes {
                     isOff(input.sw);
                 }
             }
-        }
-
-        [HarmonyPostfix, HarmonyPatch(typeof(Main), "Initialize")]
-        static void Initialize(Main __instance) {
-            __instance.abaasLink.SetDebugLevel(99);
-            __instance.abaasLink.SetDebugOutputFunc(debugfunc);
-            ApmCoreFixes.Log.LogInfo("Installed AbaasLink debugging");
-            ApmCoreFixes.Log.LogInfo("Server URI: " + __instance.daemonMain.AllNet.AbaasLinkServerName);
-        }
-
-        private static void debugfunc(string message) {
-            ApmCoreFixes.Log.LogInfo("AbaasLink: " + message);
         }
     }
 }

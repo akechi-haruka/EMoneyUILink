@@ -47,9 +47,11 @@ namespace Haruka.Arcade.EXMoney {
         private SegApi api;
         private ExMoney exmoney;
         private byte[] lastScannedCard;
+        private MoneyBrand[] brands;
 
-        public PaymentProcess(ExMoney exmoney, VFD_GP1232A02A vfd, SegApi api) {
+        public PaymentProcess(ExMoney exmoney, VFD_GP1232A02A vfd, SegApi api, MoneyBrand[] brands) {
             this.vfd = vfd;
+            this.brands = brands;
             this.api = api;
             this.exmoney = exmoney;
         }
@@ -90,7 +92,7 @@ namespace Haruka.Arcade.EXMoney {
             Busy = true;
             IsCancellable = true;
             Result = null;
-            executor = new Thread(() => PaymentRequestT(brandId, 1, (int)coin, PaymentRequestType.PayToCoin, itemName, (amount, remaining) => OnPayCoinSuccess(amount, remaining, coin)));
+            executor = new Thread(() => PaymentRequestT(brandId, 100, (int)coin, PaymentRequestType.PayToCoin, itemName, (amount, remaining) => OnPayCoinSuccess(amount, remaining, coin)));
             executor.Start();
         }
 
@@ -107,7 +109,7 @@ namespace Haruka.Arcade.EXMoney {
                 PaymentResponse result;
                 LOG.LogInformation("Request {r}", requestType);
                 LOG.LogInformation("Wait for card");
-                vfd?.SetText("Please touch card: ", brandId.ToString());
+                vfd?.SetText("Please touch card: ", brands.First(b => b.ID == brandId).Name);
                 api.SetCardReaderRGB(255, 255, 255);
                 lastScannedCard = null;
                 api.OnFelica += OnCard;
@@ -147,7 +149,7 @@ namespace Haruka.Arcade.EXMoney {
                 if (result.success) {
                     onSucess(amount, result.balance_after);
                 } else {
-                    vfd?.SetText("An error has occurred:", result.error, true);
+                    vfd?.SetText("An error has occurred:", result.error, false, true);
                 }
 
                 api.SetCardReaderStatus(false);
