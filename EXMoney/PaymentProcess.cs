@@ -114,6 +114,7 @@ namespace Haruka.Arcade.EXMoney {
                 lastScannedCard = null;
                 api.OnFelica += OnCard;
                 api.OnAime += OnCard;
+                api.OnCardReaderBlocking += OnCardBlock;
                 api.SetCardReaderStatus(true);
                 while (lastScannedCard == null) {
                     // TODO: what on card reader error?
@@ -179,6 +180,13 @@ namespace Haruka.Arcade.EXMoney {
             } finally {
                 api.OnFelica -= OnCard;
                 api.OnAime -= OnCard;
+                api.OnCardReaderBlocking -= OnCardBlock;
+            }
+        }
+
+        private void OnCardBlock(bool obj) {
+            if (obj) {
+                Cancel();
             }
         }
 
