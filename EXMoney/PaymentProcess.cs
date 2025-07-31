@@ -106,6 +106,7 @@ namespace Haruka.Arcade.EXMoney {
 
         private void PaymentRequestT(uint brandId, int amount, int count, PaymentRequestType requestType, string itemName, EMoneySuccessCallback onSucess) {
             try {
+                int payment = amount * count;
                 PaymentResponse result;
                 LOG.LogInformation("Request {r}", requestType);
                 LOG.LogInformation("Wait for card");
@@ -162,9 +163,9 @@ namespace Haruka.Arcade.EXMoney {
 
                 Result = new EMoneyResult(result.success, brandId) {
                     Time = DateTime.Now,
-                    Amount = amount,
+                    Amount = payment,
                     BalanceAfter = result.balance_after,
-                    BalanceBefore = result.balance_after + amount,
+                    BalanceBefore = result.balance_after + payment,
                     CardNumber = cardId,
                     DealNumber = "lolwut",
                     Count = count
