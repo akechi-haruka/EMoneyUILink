@@ -19,6 +19,7 @@ public class ExMoney {
 
     private bool alive;
     private bool readerBlocked;
+    private bool readerBlockedOnce;
     private PaymentProcess payment;
 
     public ExMoney(SegApi api, VFD_GP1232A02A vfd, MoneyBrand[] brands, ShareMemoryAccessor memory, ConfigParser appConfig, Options options) {
@@ -66,6 +67,11 @@ public class ExMoney {
 
             vfd?.SetTextDrawing(true);
         }
+
+        if (readerBlocked && !readerBlockedOnce) {
+            LOG.LogInformation("Reader was blocked once, enabling afterwards");
+            readerBlockedOnce = true;
+        }
     }
 
     public void SetVfdIdleText() {
@@ -79,7 +85,7 @@ public class ExMoney {
             UiSharedData data = memory.Data;
 
             data.Daemon.ServiseAlive = alive;
-            data.Daemon.CanOperateDeal = !readerBlocked;
+            data.Daemon.CanOperateDeal = !readerBlocked && (readerBlockedOnce || !options.WaitUntilBlock);
             data.Daemon.IsCancellable = payment == null || payment.IsCancellable;
             data.Daemon.IsBusy = payment != null && payment.Busy;
 

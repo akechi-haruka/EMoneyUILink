@@ -51,6 +51,10 @@ namespace Haruka.Arcade.EXMoney {
         [UsedImplicitly]
         public bool Silent { get; set; }
 
+        [Option("wait-until-block", Required = false, HelpText = "Wait with E-Money activation until reader gets blocked once.")]
+        [UsedImplicitly]
+        public bool WaitUntilBlock { get; set; }
+
         [Value(0, MetaName = "AppConfig", Required = true, HelpText = "The app.json file of the played game.")]
         [UsedImplicitly]
         public string AppConfig { get; set; }
