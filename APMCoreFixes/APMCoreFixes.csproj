@@ -76,6 +76,7 @@
     <Compile Include="ABaaSGsPatches.cs" />
     <Compile Include="APMDebugPatches.cs" />
     <Compile Include="ConfigurationManagerAttributes.cs" />
+      <Compile Include="IniFile.cs"/>
     <Compile Include="MiscPatches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

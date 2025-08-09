@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace APMCoreFixes {
-    [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.3")]
+    [BepInPlugin("eu.haruka.gmg.apm.fixes", "APMCoreFixes", "0.3.1")]
     [BepInProcess("Apmv3System")]
     public class ApmCoreFixes : BaseUnityPlugin {
         private const string CAT_HOME_USE = "Home Use";
@@ -23,7 +23,6 @@ namespace APMCoreFixes {
         public static ConfigEntry<bool> ConfigDisableNameChecks;
         public static ConfigEntry<bool> ConfigSkipWarning;
         public static ConfigEntry<bool> ConfigUseBatchLaunchSystem;
-        public static ConfigEntry<string> ConfigOptionDirectory;
         public static ConfigEntry<bool> ConfigShowMouse;
         public static ConfigEntry<bool> ConfigShowClock;
         public static ConfigEntry<bool> ConfigAddXFolders;

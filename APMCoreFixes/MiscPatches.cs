@@ -43,6 +43,17 @@ namespace APMCoreFixes {
             string game_path = Path.GetDirectoryName(game.paths.images.Original);
             ApmCoreFixes.Log.LogInfo("Directory is: " + game_path);
 
+            if (game_path.StartsWith(@"C:\Mount\Option")) {
+                ApmCoreFixes.Log.LogDebug("Default option path detected: " + game_path);
+                IniFile segatools = new IniFile("segatools.ini");
+                bool vfs_disabled = "0".Equals(segatools.Read("enabled", "vfs"));
+                string vfs_option = segatools.Read("option", "vfs");
+                if (!vfs_disabled && !String.IsNullOrWhiteSpace(vfs_option)) {
+                    game_path = game_path.Replace(@"C:\Mount\Option", vfs_option);
+                    ApmCoreFixes.Log.LogInfo("Path adjusted to " + game_path);
+                }
+            }
+
             if (!File.Exists(Path.Combine(game_path, "game.bat"))) {
                 ApmCoreFixes.Log.LogWarning("No game.bat in root directory found, falling back to actual start routine!");
                 return true;
@@ -89,10 +100,10 @@ namespace APMCoreFixes {
             PlayLogSender.Save("Launch " + subGameId + " Ver." + version);
             ApmCoreFixes.Log.LogDebug("Cancel Network");
             __instance.abaasGsController.GetComponent<Main>().Cancel();
-            ApmCoreFixes.Log.LogDebug("Start game to AMDaemon");
-            __instance.daemonMain.StartGame(subGameId, __instance.OnStartGameEnd);
             ApmCoreFixes.Log.LogDebug("OnMountEnd");
             __instance.OnMountEnd(true);
+            ApmCoreFixes.Log.LogDebug("OnStartGameEnd");
+            __instance.OnStartGameEnd(true);
             ApmCoreFixes.Log.LogDebug("OK");
             return false;
         }
@@ -110,7 +121,7 @@ namespace APMCoreFixes {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                ApmCoreFixes.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful (Warning)");
             }
 
             return false;
@@ -121,7 +132,7 @@ namespace APMCoreFixes {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                ApmCoreFixes.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful (Setup)");
             }
 
             return false;
@@ -132,7 +143,7 @@ namespace APMCoreFixes {
             if (isSucceeded) {
                 __instance.isStartGameEnd = true;
             } else {
-                ApmCoreFixes.Log.LogError("Game start not successful");
+                ApmCoreFixes.Log.LogError("Game start not successful (GameList)");
             }
 
             return false;
