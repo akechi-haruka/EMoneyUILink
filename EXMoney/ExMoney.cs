@@ -135,6 +135,9 @@ public class ExMoney {
 
             Thread.Sleep(500);
         }
+
+        LOG.LogInformation("Main thread terminated, exiting");
+        Environment.Exit(0);
     }
 
     public void InvokeCoins(uint count) {
